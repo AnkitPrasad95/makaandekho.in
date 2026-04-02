@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir -p \"d:/xampp/htdocs/makaandekho.in/admin/includes\")",
+      "Bash(mkdir -p \"d:/xampp/htdocs/makaandekho.in/uploads/properties\")",
+      "Bash(mkdir -p \"d:/xampp/htdocs/makaandekho.in/uploads/settings\")"
+    ]
+  }
+}
