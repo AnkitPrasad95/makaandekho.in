@@ -1,7 +1,7 @@
 <?php
 ob_start();
 session_start();
-require_once __DIR__ . '/includes/db.php';
+require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/includes/auth.php';
 require_auth();
 
@@ -20,7 +20,7 @@ if (!$id) {
 }
 
 // Fetch blog to get image filename
-$stmt = $pdo->prepare("SELECT title, featured_image FROM blogs WHERE id=?");
+$stmt = $pdo->prepare("SELECT title, featured_image FROM blogs WHERE id=? AND is_deleted=0");
 $stmt->execute([$id]);
 $blog = $stmt->fetch();
 
@@ -39,7 +39,7 @@ if ($blog['featured_image']) {
 }
 
 // Delete blog record
-$stmt = $pdo->prepare("DELETE FROM blogs WHERE id=?");
+$stmt = $pdo->prepare("UPDATE blogs SET is_deleted=1, deleted_at=NOW() WHERE id=?");
 $stmt->execute([$id]);
 
 flash('success', 'Blog "' . $blog['title'] . '" deleted successfully.');

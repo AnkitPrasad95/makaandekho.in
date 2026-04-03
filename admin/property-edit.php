@@ -1,25 +1,25 @@
 <?php
 ob_start();
 session_start();
-require_once __DIR__ . '/includes/db.php';
+require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/includes/auth.php';
 require_auth();
 
 $id = (int) ($_GET['id'] ?? 0);
 if (!$id) { flash('error', 'Invalid property.'); header('Location: ' . BASE_URL . 'properties.php'); exit; }
 
-$prop = $pdo->prepare("SELECT * FROM properties WHERE id=?");
+$prop = $pdo->prepare("SELECT * FROM properties WHERE id=? AND is_deleted=0");
 $prop->execute([$id]);
 $prop = $prop->fetch();
 if (!$prop) { flash('error', 'Property not found.'); header('Location: ' . BASE_URL . 'properties.php'); exit; }
 
 // Existing gallery images
-$gallery = $pdo->prepare("SELECT * FROM property_images WHERE property_id=? ORDER BY is_primary DESC, id ASC");
+$gallery = $pdo->prepare("SELECT * FROM property_images WHERE property_id=? AND is_deleted=0 ORDER BY is_primary DESC, id ASC");
 $gallery->execute([$id]);
 $gallery = $gallery->fetchAll();
 
-$locations = $pdo->query("SELECT * FROM locations ORDER BY state,city")->fetchAll();
-$users     = $pdo->query("SELECT id,name,email,role FROM users WHERE status='active' ORDER BY name")->fetchAll();
+$locations = $pdo->query("SELECT * FROM locations WHERE is_deleted=0 ORDER BY state,city")->fetchAll();
+$users     = $pdo->query("SELECT id,name,email,role FROM users WHERE status='active' AND is_deleted=0 ORDER BY name")->fetchAll();
 
 $amenity_list = [
     'parking'=>'Parking','lift'=>'Lift','security'=>'Security',
@@ -38,7 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $img = $img->fetch();
             if ($img) {
                 @unlink(UPLOAD_DIR . 'properties/' . $img['image']);
-                $pdo->prepare("DELETE FROM property_images WHERE id=?")->execute([(int)$img_id]);
+                $pdo->prepare("UPDATE property_images SET is_deleted=1, deleted_at=NOW() WHERE id=?")->execute([(int)$img_id]);
             }
         }
     }

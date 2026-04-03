@@ -1,6 +1,6 @@
 <?php
 if (session_status() === PHP_SESSION_NONE) session_start();
-require_once __DIR__ . '/includes/db.php';
+require_once __DIR__ . '/../includes/db.php';
 
 // Already logged in → redirect
 if (isset($_SESSION['admin_id'])) {
@@ -15,7 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $password =      $_POST['password'] ?? '';
 
     if ($email && $password) {
-        $stmt = $pdo->prepare("SELECT * FROM admin_users WHERE email = ? LIMIT 1");
+        $stmt = $pdo->prepare("SELECT * FROM admin_users WHERE email = ? AND is_deleted=0 LIMIT 1");
         $stmt->execute([$email]);
         $admin = $stmt->fetch();
 

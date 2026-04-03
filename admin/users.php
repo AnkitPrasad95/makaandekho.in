@@ -5,12 +5,12 @@ $filter = $_GET['status'] ?? '';
 $allowed = ['','pending','active','blocked'];
 if (!in_array($filter, $allowed)) $filter = '';
 
-$where = $filter ? "WHERE u.status = " . $pdo->quote($filter) : '';
+$where = $filter ? "WHERE u.status = " . $pdo->quote($filter) . " AND u.is_deleted=0" : 'WHERE u.is_deleted=0';
 
 $users = $pdo->query("
     SELECT u.*, COUNT(p.id) AS property_count
     FROM users u
-    LEFT JOIN properties p ON p.user_id = u.id
+    LEFT JOIN properties p ON p.user_id = u.id AND p.is_deleted=0
     $where
     GROUP BY u.id
     ORDER BY
@@ -18,7 +18,7 @@ $users = $pdo->query("
       u.created_at DESC
 ")->fetchAll();
 
-$counts = $pdo->query("SELECT status, COUNT(*) AS cnt FROM users GROUP BY status")
+$counts = $pdo->query("SELECT status, COUNT(*) AS cnt FROM users WHERE is_deleted=0 GROUP BY status")
               ->fetchAll(PDO::FETCH_KEY_PAIR);
 $pending_count = (int)($counts['pending'] ?? 0);
 ?>

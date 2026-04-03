@@ -1,6 +1,6 @@
 <?php
 if (session_status() === PHP_SESSION_NONE) session_start();
-require_once __DIR__ . '/includes/db.php';
+require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/includes/auth.php';
 require_auth();
 
@@ -22,7 +22,7 @@ if (!$id || !in_array($action, ['approve','reject','toggle_featured'])) {
 }
 
 // Verify property exists
-$check = $pdo->prepare("SELECT id, title FROM properties WHERE id = ?");
+$check = $pdo->prepare("SELECT id, title FROM properties WHERE id = ? AND is_deleted=0");
 $check->execute([$id]);
 $prop = $check->fetch();
 

@@ -6,11 +6,13 @@ $where  = '';
 $params = [];
 
 if ($filter === 'published') {
-    $where  = 'WHERE status = ?';
+    $where  = 'WHERE status = ? AND is_deleted=0';
     $params = ['published'];
 } elseif ($filter === 'draft') {
-    $where  = 'WHERE status = ?';
+    $where  = 'WHERE status = ? AND is_deleted=0';
     $params = ['draft'];
+} else {
+    $where  = 'WHERE is_deleted=0';
 }
 
 $stmt = $pdo->prepare("SELECT * FROM blogs {$where} ORDER BY created_at DESC");
@@ -18,9 +20,9 @@ $stmt->execute($params);
 $blogs = $stmt->fetchAll();
 
 // Counts for tabs
-$total_count     = (int) $pdo->query("SELECT COUNT(*) FROM blogs")->fetchColumn();
-$published_count = (int) $pdo->query("SELECT COUNT(*) FROM blogs WHERE status='published'")->fetchColumn();
-$draft_count     = (int) $pdo->query("SELECT COUNT(*) FROM blogs WHERE status='draft'")->fetchColumn();
+$total_count     = (int) $pdo->query("SELECT COUNT(*) FROM blogs WHERE is_deleted=0")->fetchColumn();
+$published_count = (int) $pdo->query("SELECT COUNT(*) FROM blogs WHERE status='published' AND is_deleted=0")->fetchColumn();
+$draft_count     = (int) $pdo->query("SELECT COUNT(*) FROM blogs WHERE status='draft' AND is_deleted=0")->fetchColumn();
 ?>
 
 <div class="page-header d-flex justify-content-between align-items-center">

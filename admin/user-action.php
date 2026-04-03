@@ -1,6 +1,6 @@
 <?php
 if (session_status() === PHP_SESSION_NONE) session_start();
-require_once __DIR__ . '/includes/db.php';
+require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/includes/auth.php';
 require_auth();
 
@@ -20,7 +20,7 @@ if (!$id || !in_array($action, ['approve','reject','toggle_status','role'])) {
     exit;
 }
 
-$check = $pdo->prepare("SELECT id, name, status FROM users WHERE id=?");
+$check = $pdo->prepare("SELECT id, name, status FROM users WHERE id=? AND is_deleted=0");
 $check->execute([$id]);
 $user = $check->fetch();
 

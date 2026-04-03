@@ -3,14 +3,14 @@
 // SETUP SCRIPT – Run once to create the admin user.
 // DELETE this file after running!
 // ============================================================
-require_once __DIR__ . '/includes/db.php';
+require_once __DIR__ . '/../includes/db.php';
 
 $name     = 'Super Admin';
 $email    = 'admin@makaandekho.in';
 $password = 'Admin@123';
 
 // Check if admin already exists
-$stmt = $pdo->prepare("SELECT id FROM admin_users WHERE email = ?");
+$stmt = $pdo->prepare("SELECT id FROM admin_users WHERE email = ? AND is_deleted=0");
 $stmt->execute([$email]);
 
 if ($stmt->fetch()) {

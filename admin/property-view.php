@@ -10,13 +10,13 @@ $stmt = $pdo->prepare("
     FROM properties p
     LEFT JOIN users u ON p.user_id = u.id
     LEFT JOIN locations l ON p.location_id = l.id
-    WHERE p.id = ?
+    WHERE p.id = ? AND p.is_deleted=0
 ");
 $stmt->execute([$id]);
 $p = $stmt->fetch();
 if (!$p) { flash('error', 'Property not found.'); header('Location: ' . BASE_URL . 'properties.php'); exit; }
 
-$images = $pdo->prepare("SELECT * FROM property_images WHERE property_id = ? ORDER BY is_primary DESC");
+$images = $pdo->prepare("SELECT * FROM property_images WHERE property_id = ? AND is_deleted=0 ORDER BY is_primary DESC");
 $images->execute([$id]);
 $images = $images->fetchAll();
 ?>

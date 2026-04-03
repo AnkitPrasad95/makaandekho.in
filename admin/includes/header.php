@@ -1,7 +1,7 @@
 <?php
 ob_start();
 if (session_status() === PHP_SESSION_NONE) session_start();
-require_once __DIR__ . '/db.php';
+require_once __DIR__ . '/../../includes/db.php';
 require_once __DIR__ . '/auth.php';
 require_auth();
 
@@ -9,7 +9,7 @@ $current = basename($_SERVER['PHP_SELF']);
 $flash   = get_flash();
 
 // New enquiry badge count (used in sidebar)
-$new_enq_count = (int) $pdo->query("SELECT COUNT(*) FROM enquiries WHERE status='new'")->fetchColumn();
+$new_enq_count = (int) $pdo->query("SELECT COUNT(*) FROM enquiries WHERE status='new' AND is_deleted=0")->fetchColumn();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -189,6 +189,12 @@ body.sb-collapsed #page-content { margin-left: 0; }
         </a>
       </li>
 
+      <li class="nav-item">
+        <a href="<?= SITE_URL ?>" target="_blank">
+          <i class="fas fa-external-link-alt nav-icon"></i> View Website
+        </a>
+      </li>
+
       <li class="nav-section">Management</li>
 
       <?php
@@ -252,6 +258,24 @@ body.sb-collapsed #page-content { margin-left: 0; }
       <li class="nav-item <?= $current === 'locations.php' ? 'active' : '' ?>">
         <a href="<?= BASE_URL ?>locations.php">
           <i class="fas fa-map-marker-alt nav-icon"></i> Locations
+        </a>
+      </li>
+
+      <li class="nav-item <?= $current === 'mega-menu.php' ? 'active' : '' ?>">
+        <a href="<?= BASE_URL ?>mega-menu.php">
+          <i class="fas fa-bars nav-icon"></i> Mega Menu
+        </a>
+      </li>
+
+      <li class="nav-item <?= $current === 'banners.php' ? 'active' : '' ?>">
+        <a href="<?= BASE_URL ?>banners.php">
+          <i class="fas fa-images nav-icon"></i> Banners
+        </a>
+      </li>
+
+      <li class="nav-item <?= $current === 'testimonials.php' ? 'active' : '' ?>">
+        <a href="<?= BASE_URL ?>testimonials.php">
+          <i class="fas fa-quote-left nav-icon"></i> Testimonials
         </a>
       </li>
 

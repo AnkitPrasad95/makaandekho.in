@@ -4,7 +4,7 @@
 $id = (int) ($_GET['id'] ?? 0);
 if (!$id) { flash('error', 'Invalid page.'); header('Location: ' . BASE_URL . 'pages.php'); exit; }
 
-$page = $pdo->prepare("SELECT * FROM cms_pages WHERE id=?");
+$page = $pdo->prepare("SELECT * FROM cms_pages WHERE id=? AND is_deleted=0");
 $page->execute([$id]);
 $page = $page->fetch();
 if (!$page) { flash('error', 'Page not found.'); header('Location: ' . BASE_URL . 'pages.php'); exit; }

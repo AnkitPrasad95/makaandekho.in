@@ -6,13 +6,13 @@
 </div>
 
 <?php
-$total_props    = (int) $pdo->query("SELECT COUNT(*) FROM properties")->fetchColumn();
-$pending_props  = (int) $pdo->query("SELECT COUNT(*) FROM properties WHERE status='pending'")->fetchColumn();
-$approved_props = (int) $pdo->query("SELECT COUNT(*) FROM properties WHERE status='approved'")->fetchColumn();
-$rejected_props = (int) $pdo->query("SELECT COUNT(*) FROM properties WHERE status='rejected'")->fetchColumn();
-$total_users    = (int) $pdo->query("SELECT COUNT(*) FROM users")->fetchColumn();
-$pending_users  = (int) $pdo->query("SELECT COUNT(*) FROM users WHERE status='pending'")->fetchColumn();
-$total_enq      = (int) $pdo->query("SELECT COUNT(*) FROM enquiries")->fetchColumn();
+$total_props    = (int) $pdo->query("SELECT COUNT(*) FROM properties WHERE is_deleted=0")->fetchColumn();
+$pending_props  = (int) $pdo->query("SELECT COUNT(*) FROM properties WHERE status='pending' AND is_deleted=0")->fetchColumn();
+$approved_props = (int) $pdo->query("SELECT COUNT(*) FROM properties WHERE status='approved' AND is_deleted=0")->fetchColumn();
+$rejected_props = (int) $pdo->query("SELECT COUNT(*) FROM properties WHERE status='rejected' AND is_deleted=0")->fetchColumn();
+$total_users    = (int) $pdo->query("SELECT COUNT(*) FROM users WHERE is_deleted=0")->fetchColumn();
+$pending_users  = (int) $pdo->query("SELECT COUNT(*) FROM users WHERE status='pending' AND is_deleted=0")->fetchColumn();
+$total_enq      = (int) $pdo->query("SELECT COUNT(*) FROM enquiries WHERE is_deleted=0")->fetchColumn();
 
 $recent_props = $pdo->query("
     SELECT p.id, p.title, p.property_type, p.listing_type, p.price, p.status,
@@ -20,6 +20,7 @@ $recent_props = $pdo->query("
     FROM properties p
     LEFT JOIN users u ON p.user_id = u.id
     LEFT JOIN locations l ON p.location_id = l.id
+    WHERE p.is_deleted=0
     ORDER BY p.created_at DESC LIMIT 8
 ")->fetchAll();
 
@@ -28,6 +29,7 @@ $recent_enq = $pdo->query("
            p.title AS prop_title
     FROM enquiries e
     LEFT JOIN properties p ON e.property_id = p.id
+    WHERE e.is_deleted=0
     ORDER BY e.created_at DESC LIMIT 6
 ")->fetchAll();
 ?>

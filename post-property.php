@@ -10,7 +10,7 @@ try {
     ]);
 } catch (PDOException $e) { die('DB Error: ' . $e->getMessage()); }
 
-$locations = $pdo->query("SELECT * FROM locations ORDER BY state,city")->fetchAll();
+$locations = $pdo->query("SELECT * FROM locations WHERE is_deleted=0 ORDER BY state,city")->fetchAll();
 $success   = false;
 $errors    = [];
 
@@ -94,7 +94,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         // Get/create user
-        $chk = $pdo->prepare("SELECT id FROM users WHERE email=?");
+        $chk = $pdo->prepare("SELECT id FROM users WHERE email=? AND is_deleted=0");
         $chk->execute([$email]);
         $user = $chk->fetch();
         if ($user) {

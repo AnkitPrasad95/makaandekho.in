@@ -8,6 +8,7 @@ if (isset($_GET['export']) && $_GET['export'] === 'csv') {
                p.title AS property_title
         FROM enquiries e
         LEFT JOIN properties p ON e.property_id = p.id
+        WHERE e.is_deleted=0
         ORDER BY e.created_at DESC
     ")->fetchAll();
 
@@ -39,10 +40,11 @@ $enquiries = $pdo->query("
     SELECT e.*, p.title AS property_title
     FROM enquiries e
     LEFT JOIN properties p ON e.property_id = p.id
+    WHERE e.is_deleted=0
     ORDER BY e.created_at DESC
 ")->fetchAll();
 
-$counts = $pdo->query("SELECT status, COUNT(*) FROM enquiries GROUP BY status")->fetchAll(PDO::FETCH_KEY_PAIR);
+$counts = $pdo->query("SELECT status, COUNT(*) FROM enquiries WHERE is_deleted=0 GROUP BY status")->fetchAll(PDO::FETCH_KEY_PAIR);
 ?>
 
 <div class="page-header d-flex justify-content-between align-items-center">

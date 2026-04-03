@@ -3,7 +3,7 @@
 <?php
 // Delete
 if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
-    $stmt = $pdo->prepare("DELETE FROM locations WHERE id=?");
+    $stmt = $pdo->prepare("UPDATE locations SET is_deleted=1, deleted_at=NOW() WHERE id=?");
     $stmt->execute([(int)$_GET['delete']]);
     flash('success', 'Location deleted.');
     header('Location: ' . BASE_URL . 'locations.php');
@@ -56,12 +56,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // Fetch for edit
 $editing = null;
 if (isset($_GET['edit']) && is_numeric($_GET['edit'])) {
-    $stmt = $pdo->prepare("SELECT * FROM locations WHERE id=?");
+    $stmt = $pdo->prepare("SELECT * FROM locations WHERE id=? AND is_deleted=0");
     $stmt->execute([(int)$_GET['edit']]);
     $editing = $stmt->fetch();
 }
 
-$locations = $pdo->query("SELECT * FROM locations ORDER BY state, city, area")->fetchAll();
+$locations = $pdo->query("SELECT * FROM locations WHERE is_deleted=0 ORDER BY state, city, area")->fetchAll();
 ?>
 
 <div class="page-header">

@@ -1,7 +1,7 @@
 <?php require_once 'includes/header.php'; ?>
 
 <?php
-$pages = $pdo->query("SELECT * FROM cms_pages ORDER BY id ASC")->fetchAll();
+$pages = $pdo->query("SELECT * FROM cms_pages WHERE is_deleted=0 ORDER BY id ASC")->fetchAll();
 ?>
 
 <div class="page-header">

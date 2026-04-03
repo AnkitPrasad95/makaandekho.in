@@ -1,14 +1,14 @@
 <?php
 ob_start();
 session_start();
-require_once __DIR__ . '/includes/db.php';
+require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/includes/auth.php';
 require_auth();
 
 $id = (int) ($_GET['id'] ?? 0);
 if (!$id) { flash('error', 'Invalid blog.'); header('Location: ' . BASE_URL . 'blogs.php'); exit; }
 
-$blog = $pdo->prepare("SELECT * FROM blogs WHERE id=?");
+$blog = $pdo->prepare("SELECT * FROM blogs WHERE id=? AND is_deleted=0");
 $blog->execute([$id]);
 $blog = $blog->fetch();
 if (!$blog) { flash('error', 'Blog not found.'); header('Location: ' . BASE_URL . 'blogs.php'); exit; }

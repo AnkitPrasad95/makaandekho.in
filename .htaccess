@@ -1,0 +1,35 @@
+RewriteEngine On
+RewriteBase /makaandekho.in/
+
+# Remove .php extension
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^([^/]+)/?$ $1.php [L,QSA]
+
+# Property detail clean URL: /property/slug-name
+RewriteRule ^property/([a-zA-Z0-9_-]+)/?$ property-detail.php?slug=$1 [L,QSA]
+
+# Blog detail clean URL: /blog/slug-name
+RewriteRule ^blog/([a-zA-Z0-9_-]+)/?$ blog-detail.php?slug=$1 [L,QSA]
+
+# Market area pages: /city-name
+# (handled by the market-area.php file)
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^([a-zA-Z0-9_-]+)/([a-zA-Z0-9_-]+)/?$ market-area.php?city=$1&property=$2 [L,QSA]
+
+# Prevent directory listing
+Options -Indexes
+
+# Security headers
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set X-XSS-Protection "1; mode=block"
+</IfModule>
+
+# Block access to sensitive files
+<FilesMatch "\.(sql|log|env|md)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>

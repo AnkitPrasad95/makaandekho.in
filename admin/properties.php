@@ -5,7 +5,7 @@ $status_filter = $_GET['status'] ?? '';
 $allowed = ['', 'pending', 'approved', 'rejected'];
 if (!in_array($status_filter, $allowed)) $status_filter = '';
 
-$where = $status_filter ? "WHERE p.status = " . $pdo->quote($status_filter) : '';
+$where = $status_filter ? "WHERE p.status = " . $pdo->quote($status_filter) . " AND p.is_deleted=0" : 'WHERE p.is_deleted=0';
 
 $properties = $pdo->query("
     SELECT p.id, p.title, p.property_type, p.listing_type, p.price,
@@ -20,7 +20,7 @@ $properties = $pdo->query("
 ")->fetchAll();
 
 $counts = $pdo->query("
-    SELECT status, COUNT(*) AS cnt FROM properties GROUP BY status
+    SELECT status, COUNT(*) AS cnt FROM properties WHERE is_deleted=0 GROUP BY status
 ")->fetchAll(PDO::FETCH_KEY_PAIR);
 ?>
 

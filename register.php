@@ -38,7 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (empty($errors)) {
         // Check email exists
-        $chk = $pdo->prepare("SELECT id FROM users WHERE email = ?");
+        $chk = $pdo->prepare("SELECT id FROM users WHERE email = ? AND is_deleted=0");
         $chk->execute([$email]);
         if ($chk->fetch()) {
             $errors[] = 'This email is already registered.';
