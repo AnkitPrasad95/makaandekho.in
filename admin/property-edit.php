@@ -79,6 +79,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $meta_desc       = trim($_POST['meta_description'] ?? '');
     $meta_keywords   = trim($_POST['meta_keywords']    ?? '');
     $user_id         = is_numeric($_POST['user_id']??'') ? (int)$_POST['user_id'] : null;
+    $agent_id        = is_numeric($_POST['agent_id']??'') ? (int)$_POST['agent_id'] : null;
 
     if (!$title) $errors[] = 'Property title is required.';
     if (!$price) $errors[] = 'Price is required.';
@@ -118,7 +119,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
               listing_type=?,bedrooms=?,bathrooms=?,area_sqft=?,floor=?,total_floors=?,furnishing=?,property_age=?,
               address=?,country=?,pincode=?,google_map=?,location_id=?,
               builder_name=?,contact_person=?,builder_phone=?,builder_email=?,
-              featured_image=?,video_url=?,amenities=?,user_id=?,
+              featured_image=?,video_url=?,amenities=?,user_id=?,agent_id=?,
               status=?,availability=?,publish_status=?,featured=?,is_trending=?,is_recommended=?,
               meta_title=?,meta_description=?,meta_keywords=?,
               updated_at=NOW()
@@ -128,7 +129,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $listing_type,$bedrooms,$bathrooms,$area_sqft,$floor,$total_floors,$furnishing,$property_age,
             $address,$country,$pincode,$google_map,$location_id,
             $builder_name,$contact_person,$builder_phone,$builder_email,
-            $featured_image,$video_url,$amenities,$user_id,
+            $featured_image,$video_url,$amenities,$user_id,$agent_id,
             $status,$availability,$publish_status,$featured,$is_trending,$is_recommended,
             $meta_title,$meta_desc,$meta_keywords,
             $id
@@ -562,6 +563,34 @@ require_once __DIR__ . '/includes/header.php';
             <?php endforeach; ?>
           </select>
         </div>
+      </div>
+    </div>
+
+    <!-- Assign Agent -->
+    <div class="card mb-4">
+      <div class="card-header" style="background:#fff8e1;"><i class="fas fa-user-tie mr-2 text-warning"></i>Listing Agent / Propreneur</div>
+      <div class="card-body">
+        <div class="form-group mb-2">
+          <label class="form-label" style="font-size:12.5px;font-weight:600;">Assign Agent <small class="text-muted">(shown on property page)</small></label>
+          <select name="agent_id" class="form-control">
+            <option value="">– No Agent Assigned –</option>
+            <?php foreach($users as $u): ?>
+            <option value="<?=$u['id']?>" <?= ($d['agent_id']??'')==$u['id']?'selected':'' ?>>
+              <?= htmlspecialchars($u['name'].' ('.$u['role'].') - '.$u['email']) ?>
+            </option>
+            <?php endforeach; ?>
+          </select>
+        </div>
+        <?php if (!empty($d['agent_id'])):
+            $assignedAgent = null;
+            foreach($users as $u) { if($u['id']==$d['agent_id']) { $assignedAgent=$u; break; } }
+            if ($assignedAgent):
+        ?>
+        <div style="background:#f8fafc;border-radius:8px;padding:10px;font-size:12px;margin-top:8px;">
+          <strong style="color:#1a2332;"><i class="fas fa-user-check text-success mr-1"></i> Currently Assigned:</strong>
+          <?= htmlspecialchars($assignedAgent['name']) ?> (<?= ucfirst($assignedAgent['role']) ?>)
+        </div>
+        <?php endif; endif; ?>
       </div>
     </div>
 

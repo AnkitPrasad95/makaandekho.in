@@ -17,7 +17,11 @@ $new_enq_count = (int) $pdo->query("SELECT COUNT(*) FROM enquiries WHERE status=
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>MakaanDekho Admin</title>
+<?php if (!empty($settings['favicon'])): ?>
+<link rel="icon" href="<?= UPLOAD_URL . 'settings/' . $settings['favicon'] ?>">
+<?php else: ?>
 <link rel="icon" type="image/png" href="<?= SITE_URL ?>favicon.png">
+<?php endif; ?>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap4.min.css">
@@ -35,11 +39,12 @@ a     { text-decoration: none; }
 
 /* ── Sidebar ── */
 #sidebar {
-  width: 240px; min-height: 100vh;
+  width: 240px; height: 100vh;
   background: var(--sb-bg);
   position: fixed; top: 0; left: 0; z-index: 1030;
   display: flex; flex-direction: column;
   transition: transform .25s ease;
+  overflow: hidden;
 }
 .sb-brand {
   padding: 16px 20px; background: #111b27;
@@ -49,9 +54,11 @@ a     { text-decoration: none; }
 .sb-brand .logo    { color: #fff; font-size: 20px; font-weight: 800; margin: 0; line-height: 1; }
 .sb-brand .logo span { color: #f0a500; }
 .sb-brand small    { color: #5d7a96; font-size: 11px; }
-.sb-nav           { flex: 1; overflow-y: auto; padding: 8px 0 20px; }
-.sb-nav::-webkit-scrollbar { width: 4px; }
-.sb-nav::-webkit-scrollbar-thumb { background: #2d4158; border-radius: 2px; }
+.sb-nav           { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 8px 0 20px; scrollbar-width: thin; scrollbar-color: #2d4158 transparent; }
+.sb-nav::-webkit-scrollbar { width: 5px; }
+.sb-nav::-webkit-scrollbar-track { background: transparent; }
+.sb-nav::-webkit-scrollbar-thumb { background: #2d4158; border-radius: 3px; }
+.sb-nav::-webkit-scrollbar-thumb:hover { background: #3d5872; }
 .nav-section {
   color: #3d5872; font-size: 10px; text-transform: uppercase;
   letter-spacing: 1.3px; font-weight: 700;

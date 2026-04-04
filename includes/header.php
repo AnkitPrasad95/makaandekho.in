@@ -12,6 +12,15 @@
     <link rel="icon" href="<?= UPLOAD_URL . 'settings/' . $settings['favicon'] ?>">
     <?php endif; ?>
 
+    <!-- Open Graph -->
+    <meta property="og:title" content="<?= htmlspecialchars($pageTitle ?? ($settings['meta_title'] ?? 'MakaanDekho')) ?>">
+    <meta property="og:description" content="<?= htmlspecialchars($pageDesc ?? ($settings['meta_description'] ?? '')) ?>">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="<?= SITE_URL ?>">
+    <?php if (!empty($settings['site_logo'])): ?>
+    <meta property="og:image" content="<?= UPLOAD_URL . 'settings/' . $settings['site_logo'] ?>">
+    <?php endif; ?>
+
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -29,6 +38,10 @@
     <script>var SITE_URL = '<?= SITE_URL ?>';</script>
 </head>
 <?php if (session_status() === PHP_SESSION_NONE) session_start(); ?>
+<?php
+// Site name from settings
+$siteName = $settings['site_name'] ?? 'MakaanDekho';
+?>
 <body>
 <header class="main-header">
 <!-- ========== NAVBAR ========== -->
@@ -36,7 +49,7 @@
     <div class="container">
         <a class="navbar-brand mr-10 px-0 w-100 w-xl-auto" href="<?= SITE_URL ?>">
             <?php if (!empty($settings['site_logo'])): ?>
-                <img src="<?= UPLOAD_URL . 'settings/' . $settings['site_logo'] ?>" alt="MakaanDekho" class="nav-logo">
+                <img src="<?= UPLOAD_URL . 'settings/' . $settings['site_logo'] ?>" alt="<?= htmlspecialchars($siteName) ?>" class="nav-logo">
             <?php else: ?>
                 <div class="logo-text">
                     <span class="logo-icon"><i class="fas fa-home"></i></span>
@@ -94,7 +107,7 @@
                                 <div class="mega-cta-card">
                                     <h6>GROW YOUR REAL ESTATE BUSINESS</h6>
                                     <p>Get verified leads and premium visibility.</p>
-                                    <a href="<?= SITE_URL ?>register.php" class="btn btn-light btn-sm">Join Network</a>
+                                    <a href="<?= SITE_URL ?>?register=1" class="btn btn-light btn-sm">Join Network</a>
                                 </div>
                             </div>
                             <?php endif; ?>
@@ -113,9 +126,15 @@
                 <?php endforeach; ?>
             </ul>
             <div class="nav-right d-flex align-items-center gap-3">
+                <?php if (!empty($_SESSION['user_id'])): ?>
+                <a href="<?= SITE_URL ?>add-property.php" class="btn btn-add-listing btn btn-outline-primary bg-primary btn-lg text-white rounded-lg bg-hover-primary border-hover-primary hover-white d-none d-lg-block">
+                    <i class="fas fa-home me-1"></i> Add listing
+                </a>
+                <?php else: ?>
                 <a href="#" class="btn btn-add-listing btn btn-outline-primary bg-primary btn-lg text-white rounded-lg bg-hover-primary border-hover-primary hover-white d-none d-lg-block" data-bs-toggle="modal" data-bs-target="#postPropertyModal">
                     <i class="fas fa-home me-1"></i> Add listing
                 </a>
+                <?php endif; ?>
                 <?php if (!empty($_SESSION['user_id'])): ?>
                 <div class="dropdown">
                     <a class="nav-link dropdown-toggle login-link" href="#" data-bs-toggle="dropdown">
@@ -135,7 +154,7 @@
                     <a class="nav-link dropdown-toggle login-link" href="#" data-bs-toggle="dropdown">Login</a>
                     <ul class="dropdown-menu dropdown-menu-end">
                         <li><a class="dropdown-item" href="<?= SITE_URL ?>login.php"><i class="fas fa-user me-2"></i>User Login</a></li>
-                        <li><a class="dropdown-item" href="<?= SITE_URL ?>register.php"><i class="fas fa-user-plus me-2"></i>Register</a></li>
+                        <li><a class="dropdown-item" href="<?= SITE_URL ?>?register=1"><i class="fas fa-user-plus me-2"></i>Register</a></li>
                         <li><hr class="dropdown-divider"></li>
                         <li><a class="dropdown-item" href="<?= SITE_URL ?>admin/login.php"><i class="fas fa-shield-alt me-2"></i>Admin Login</a></li>
                     </ul>
@@ -149,8 +168,8 @@
 
 <!-- ========== POST PROPERTY MODAL ========== -->
 <div class="modal fade" id="postPropertyModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered" style="max-width:520px;">
-    <div class="modal-content pp-modal">
+  <div class="modal-dialog" style="max-width:520px;margin:60px auto;">
+    <div class="modal-content" style="border:none;border-radius:14px;overflow:visible;display:block !important;">
       <!-- Header -->
       <div class="pp-modal-header">
         <h5>Post Your Property</h5>
@@ -159,14 +178,62 @@
       </div>
       <!-- Body -->
       <div class="pp-modal-body">
-        <!-- Success message (hidden by default) -->
-        <div id="ppSuccess" style="display:none;" class="text-center py-4">
+        <!-- Success: New User Registration -->
+        <div id="ppSuccessNew" style="display:none;" class="py-3">
+          <div style="text-align:center;">
+            <div style="width:70px;height:70px;border-radius:50%;background:#d1fae5;color:#059669;font-size:30px;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;">
+              <i class="fas fa-user-check"></i>
+            </div>
+            <h5 style="font-weight:700;color:#1a2332;margin-bottom:4px;">Registration Successful!</h5>
+            <p style="font-size:13px;color:#6b7280;margin-bottom:0;">Your account has been created. Save your login details below.</p>
+          </div>
+
+          <!-- Credentials Box -->
+          <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:12px;padding:16px;margin:16px 0;text-align:left;">
+            <div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:14px;margin-bottom:12px;">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                <span style="font-size:12px;color:#6b7280;"><i class="fas fa-envelope" style="margin-right:4px;"></i> Email</span>
+                <strong id="ppCredEmail" style="font-size:13px;color:#1a2332;"></strong>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <span style="font-size:12px;color:#6b7280;"><i class="fas fa-lock" style="margin-right:4px;"></i> Password</span>
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <strong id="ppCredPass" style="font-size:15px;color:#1e40af;letter-spacing:1px;font-family:monospace;"></strong>
+                  <button type="button" onclick="copyPassword()" style="background:#e0e7ff;border:none;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;color:#1e40af;font-weight:600;" title="Copy password">
+                    <i class="fas fa-copy"></i> Copy
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div style="background:#fef3c7;border-radius:8px;padding:10px;font-size:12px;color:#92400e;">
+              <i class="fas fa-clock" style="margin-right:4px;"></i>
+              <strong>Next Steps:</strong>
+              <ol style="margin:6px 0 0;padding-left:18px;line-height:1.8;">
+                <li>Admin will review & approve your account (1-24 hrs)</li>
+                <li>You'll receive an email with a <strong>Set Password</strong> link</li>
+                <li>Set your password and start posting properties!</li>
+              </ol>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:8px;margin-top:12px;">
+            <button class="btn btn-primary flex-fill" onclick="resetPostForm()" style="border-radius:8px;font-size:13px;"><i class="fas fa-plus" style="margin-right:4px;"></i> Post Another</button>
+            <a href="<?= SITE_URL ?>login.php" class="btn btn-outline-secondary flex-fill" style="border-radius:8px;font-size:13px;"><i class="fas fa-sign-in-alt" style="margin-right:4px;"></i> Go to Login</a>
+          </div>
+        </div>
+
+        <!-- Success: Existing User (just property submitted) -->
+        <div id="ppSuccessExisting" style="display:none;" class="text-center py-4">
           <div style="width:70px;height:70px;border-radius:50%;background:#d1fae5;color:#059669;font-size:30px;display:flex;align-items:center;justify-content:center;margin:0 auto 15px;">
             <i class="fas fa-check"></i>
           </div>
           <h5 style="font-weight:700;color:#1a2332;">Property Submitted!</h5>
-          <p class="text-muted" style="font-size:14px;">Your property is under review. We'll contact you shortly.</p>
-          <button class="btn btn-primary mt-2" onclick="resetPostForm()" style="border-radius:8px;">Post Another</button>
+          <p style="font-size:14px;color:#6b7280;">Your property listing is under review.<br>We'll contact you shortly with updates.</p>
+          <div style="display:flex;gap:8px;justify-content:center;margin-top:16px;">
+            <button class="btn btn-primary" onclick="resetPostForm()" style="border-radius:8px;font-size:13px;"><i class="fas fa-plus" style="margin-right:4px;"></i> Post Another</button>
+            <a href="<?= SITE_URL ?>login.php" class="btn btn-outline-secondary" style="border-radius:8px;font-size:13px;"><i class="fas fa-sign-in-alt" style="margin-right:4px;"></i> Go to Login</a>
+          </div>
         </div>
 
         <!-- Form -->
@@ -187,17 +254,17 @@
 
           <!-- Name -->
           <label class="pp-label">Name</label>
-          <input type="text" name="name" class="pp-input" placeholder="Your Name" required>
+          <input type="text" name="name" class="pp-input" placeholder="Your Name" required data-v="req|name|safe" data-msg="Name is required.">
 
           <!-- Phone & Email -->
           <div class="row g-3">
             <div class="col-6">
               <label class="pp-label">Phone</label>
-              <input type="tel" name="phone" class="pp-input" placeholder="9876543210" maxlength="10" pattern="[0-9]{10}" required>
+              <input type="tel" name="phone" class="pp-input" placeholder="9876543210" maxlength="10" required data-v="req|phone" data-msg="Phone is required.">
             </div>
             <div class="col-6">
               <label class="pp-label">Email</label>
-              <input type="email" name="email" class="pp-input" placeholder="name@mail.com" required>
+              <input type="email" name="email" class="pp-input" placeholder="name@mail.com" required data-v="req|email" data-msg="Email is required.">
             </div>
           </div>
 
@@ -205,7 +272,7 @@
           <label class="pp-label">City</label>
           <div class="pp-input-icon">
             <i class="fas fa-map-marker-alt"></i>
-            <input type="text" name="city" class="pp-input" placeholder="e.g. Noida" required>
+            <input type="text" name="city" class="pp-input" placeholder="e.g. Noida" required data-v="req|safe" data-msg="City is required.">
           </div>
 
           <!-- State -->
@@ -228,10 +295,34 @@
             Post Property Now
           </button>
           <p class="text-center mt-2" style="font-size:12px;color:#999;">
-            By posting, you agree to our <a href="#" style="color:#2196F3;">Terms & Conditions</a>.
+            By posting, you agree to our <a href="<?= SITE_URL ?>terms.php" style="color:#2196F3;">Terms & Conditions</a>.
           </p>
         </form>
       </div>
     </div>
   </div>
 </div>
+
+<!-- ========== WHATSAPP FLOATING BUTTON ========== -->
+<?php if (!empty($settings['whatsapp_number'])): ?>
+<a href="https://wa.me/91<?= htmlspecialchars($settings['whatsapp_number']) ?>" target="_blank" class="whatsapp-float" title="Chat on WhatsApp">
+    <i class="fab fa-whatsapp"></i>
+</a>
+<style>
+.whatsapp-float{position:fixed;bottom:25px;right:25px;z-index:9999;width:56px;height:56px;background:#25D366;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;box-shadow:0 4px 15px rgba(37,211,102,.4);transition:transform .3s,box-shadow .3s;}
+.whatsapp-float:hover{transform:scale(1.1);box-shadow:0 6px 20px rgba(37,211,102,.5);color:#fff;}
+</style>
+<?php endif; ?>
+
+<!-- Auto-open popup if ?register=1 -->
+<script>
+if (window.location.search.indexOf('register=1') !== -1) {
+    document.addEventListener('DOMContentLoaded', function() {
+        var modal = document.getElementById('postPropertyModal');
+        if (modal) {
+            var bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
+        }
+    });
+}
+</script>

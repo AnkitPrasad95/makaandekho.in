@@ -21,12 +21,20 @@ $imgStmt = $pdo->prepare("SELECT * FROM property_images WHERE property_id = ? AN
 $imgStmt->execute([$prop['id']]);
 $gallery = $imgStmt->fetchAll();
 
-// Builder / user info
+// Builder / Owner info
 $builder = null;
 if ($prop['user_id']) {
     $bStmt = $pdo->prepare("SELECT * FROM users WHERE id = ? AND is_deleted=0");
     $bStmt->execute([$prop['user_id']]);
     $builder = $bStmt->fetch();
+}
+
+// Assigned Agent info
+$agent = null;
+if (!empty($prop['agent_id'])) {
+    $aStmt = $pdo->prepare("SELECT * FROM users WHERE id = ? AND is_deleted=0");
+    $aStmt->execute([$prop['agent_id']]);
+    $agent = $aStmt->fetch();
 }
 
 // Amenities
@@ -221,16 +229,16 @@ if (!empty($prop['featured_image'])) $featImg = UPLOAD_URL . 'properties/' . $pr
                     <input type="hidden" name="property_id" value="<?= $prop['id'] ?>">
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <input type="text" name="name" class="pd-input" placeholder="Your Name *" required>
+                            <input type="text" name="name" class="pd-input" placeholder="Your Name *" required data-v="req|name|safe" data-msg="Name is required.">
                         </div>
                         <div class="col-md-6">
-                            <input type="tel" name="phone" class="pd-input" placeholder="Phone Number *" maxlength="10" required>
+                            <input type="tel" name="phone" class="pd-input" placeholder="Phone Number *" maxlength="10" required data-v="req|phone" data-msg="Phone is required.">
                         </div>
                         <div class="col-12">
-                            <input type="email" name="email" class="pd-input" placeholder="Email Address *" required>
+                            <input type="email" name="email" class="pd-input" placeholder="Email Address *" required data-v="req|email" data-msg="Email is required.">
                         </div>
                         <div class="col-12">
-                            <textarea name="message" class="pd-input" rows="3" placeholder="I'm interested in this property..."></textarea>
+                            <textarea name="message" class="pd-input" rows="3" placeholder="I'm interested in this property..." data-v="safe"></textarea>
                         </div>
                         <div class="col-12">
                             <button type="submit" class="pd-enquiry-btn" id="enquiryBtn">
@@ -246,26 +254,75 @@ if (!empty($prop['featured_image'])) $featImg = UPLOAD_URL . 'properties/' . $pr
 
         <!-- ===== RIGHT SIDEBAR ===== -->
         <div class="col-lg-4">
-            <!-- Builder Card -->
+
+            <!-- Listing Agent / Propreneur Card -->
+            <?php
+            $displayAgent = $agent ?: $builder; // Show assigned agent, fallback to owner
+            if ($displayAgent):
+                $agentPhoto = !empty($displayAgent['profile_image'])
+                    ? UPLOAD_URL . 'users/' . $displayAgent['profile_image']
+                    : '';
+                $agentInitial = strtoupper(substr($displayAgent['name'], 0, 1));
+                $agentRole = ucfirst($displayAgent['role'] ?? 'Agent');
+            ?>
+            <div class="pd-sidebar-card" style="padding:0;overflow:hidden;border:none;">
+                <!-- Agent Header -->
+                <div style="background:#1a2332;padding:16px 20px;">
+                    <p style="color:#f0a500;font-size:12px;font-weight:700;margin:0;letter-spacing:1px;">LISTING PROPRENEUR</p>
+                </div>
+                <!-- Agent Body -->
+                <div style="background:#253042;padding:20px;display:flex;align-items:center;gap:16px;">
+                    <!-- Photo -->
+                    <?php if ($agentPhoto): ?>
+                    <div style="width:70px;height:70px;border-radius:50%;overflow:hidden;border:3px solid #f0a500;flex-shrink:0;">
+                        <img src="<?= htmlspecialchars($agentPhoto) ?>" alt="<?= htmlspecialchars($displayAgent['name']) ?>" style="width:100%;height:100%;object-fit:cover;">
+                    </div>
+                    <?php else: ?>
+                    <div style="width:70px;height:70px;border-radius:50%;background:linear-gradient(135deg,#f0a500,#e88d00);display:flex;align-items:center;justify-content:center;border:3px solid #f0a500;flex-shrink:0;">
+                        <span style="font-size:26px;font-weight:800;color:#fff;"><?= $agentInitial ?></span>
+                    </div>
+                    <?php endif; ?>
+                    <!-- Info -->
+                    <div>
+                        <h5 style="color:#fff;font-weight:700;font-size:16px;margin:0 0 4px;"><?= htmlspecialchars($displayAgent['name']) ?></h5>
+                        <?php if (!empty($displayAgent['email'])): ?>
+                        <p style="color:#adb5bd;font-size:13px;margin:0 0 3px;">
+                            <i class="fas fa-envelope" style="color:#f0a500;width:16px;font-size:11px;"></i>
+                            <?= htmlspecialchars($displayAgent['email']) ?>
+                        </p>
+                        <?php endif; ?>
+                        <?php if (!empty($displayAgent['phone'])): ?>
+                        <p style="color:#adb5bd;font-size:13px;margin:0;">
+                            <i class="fas fa-phone" style="color:#f0a500;width:16px;font-size:11px;"></i>
+                            <?= htmlspecialchars($displayAgent['phone']) ?>
+                        </p>
+                        <?php endif; ?>
+                    </div>
+                </div>
+                <!-- Actions -->
+                <div style="background:#253042;padding:0 20px 20px;display:flex;gap:8px;">
+                    <?php if (!empty($displayAgent['phone'])): ?>
+                    <a href="tel:+91<?= htmlspecialchars($displayAgent['phone']) ?>" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;background:#f0a500;color:#1a2332;border-radius:8px;font-weight:700;font-size:13px;text-decoration:none;">
+                        <i class="fas fa-phone-alt"></i> Call Now
+                    </a>
+                    <?php endif; ?>
+                    <?php if (!empty($settings['whatsapp_number']) || !empty($displayAgent['phone'])): ?>
+                    <a href="https://wa.me/91<?= htmlspecialchars($displayAgent['phone'] ?? $settings['whatsapp_number']) ?>?text=<?= urlencode('Hi, I am interested in: ' . $prop['title']) ?>" target="_blank" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;background:#25D366;color:#fff;border-radius:8px;font-weight:700;font-size:13px;text-decoration:none;">
+                        <i class="fab fa-whatsapp"></i> WhatsApp
+                    </a>
+                    <?php endif; ?>
+                </div>
+            </div>
+            <?php else: ?>
+            <!-- Fallback: No agent assigned -->
             <div class="pd-sidebar-card pd-builder-card">
-                <?php if (!empty($prop['builder_name'])): ?>
-                <div class="builder-logo">
-                    <i class="fas fa-building"></i>
-                </div>
-                <h5><?= htmlspecialchars($prop['builder_name']) ?></h5>
-                <?php elseif ($builder): ?>
-                <div class="builder-logo">
-                    <i class="fas fa-user"></i>
-                </div>
-                <h5><?= htmlspecialchars($builder['name']) ?></h5>
-                <?php else: ?>
                 <div class="builder-logo"><i class="fas fa-home"></i></div>
-                <h5>MakaanDekho</h5>
-                <?php endif; ?>
+                <h5><?= htmlspecialchars($settings['site_name'] ?? 'MakaanDekho') ?></h5>
                 <a href="#enquirySection" class="btn-contact-builder">
-                    <i class="fas fa-phone-alt"></i> Contact Builder
+                    <i class="fas fa-phone-alt"></i> Enquire Now
                 </a>
             </div>
+            <?php endif; ?>
 
             <!-- Key Highlights -->
             <div class="pd-sidebar-card">
@@ -397,6 +454,7 @@ calcEMI();
 // Enquiry form AJAX
 document.getElementById('enquiryForm')?.addEventListener('submit', function(e) {
     e.preventDefault();
+    if (typeof MKV !== 'undefined' && !MKV.validate(this)) return;
     var btn = document.getElementById('enquiryBtn');
     var msg = document.getElementById('enquiryMsg');
     btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';

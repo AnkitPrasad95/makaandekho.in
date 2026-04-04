@@ -3,16 +3,27 @@ require_once __DIR__ . '/includes/db.php';
 
 // ---- Fetch data for homepage ----
 
+// Site settings shortcuts
+$siteName  = $settings['site_name'] ?? 'MakaanDekho';
+$sitePhone = $settings['phone'] ?? $settings['whatsapp_number'] ?? '';
+$siteEmail = $settings['email'] ?? '';
+
 // Locations for "Explore Property Types"
-$stmtLoc = $pdo->query("SELECT * FROM locations WHERE is_deleted=0 ORDER BY city ASC LIMIT 8");
+$stmtLoc = $pdo->query("SELECT l.*, COUNT(p.id) as prop_count
+    FROM locations l
+    LEFT JOIN properties p ON p.location_id = l.id AND p.status='approved' AND p.is_deleted=0
+    WHERE l.is_deleted=0
+    GROUP BY l.id
+    ORDER BY prop_count DESC, l.city ASC LIMIT 8");
 $locations = $stmtLoc->fetchAll();
 
 // Trending properties (approved + is_trending)
 $stmtTrending = $pdo->prepare("
-    SELECT p.*, l.city, l.area
+    SELECT p.*, l.city, l.area,
+           (SELECT pi.image FROM property_images pi WHERE pi.property_id = p.id AND pi.is_primary=1 AND pi.is_deleted=0 LIMIT 1) as primary_image
     FROM properties p
     LEFT JOIN locations l ON p.location_id = l.id
-    WHERE p.status = 'approved' AND p.is_trending = 1 AND p.is_deleted=0 AND l.is_deleted=0
+    WHERE p.status = 'approved' AND p.is_trending = 1 AND p.is_deleted=0
     ORDER BY p.created_at DESC LIMIT 9
 ");
 $stmtTrending->execute();
@@ -20,10 +31,11 @@ $trendingProperties = $stmtTrending->fetchAll();
 
 // Recommended properties
 $stmtRecommended = $pdo->prepare("
-    SELECT p.*, l.city, l.area
+    SELECT p.*, l.city, l.area,
+           (SELECT pi.image FROM property_images pi WHERE pi.property_id = p.id AND pi.is_primary=1 AND pi.is_deleted=0 LIMIT 1) as primary_image
     FROM properties p
     LEFT JOIN locations l ON p.location_id = l.id
-    WHERE p.status = 'approved' AND p.is_recommended = 1 AND p.is_deleted=0 AND l.is_deleted=0
+    WHERE p.status = 'approved' AND p.is_recommended = 1 AND p.is_deleted=0
     ORDER BY p.created_at DESC LIMIT 9
 ");
 $stmtRecommended->execute();
@@ -31,28 +43,30 @@ $recommendedProperties = $stmtRecommended->fetchAll();
 
 // High demand = featured properties
 $stmtHighDemand = $pdo->prepare("
-    SELECT p.*, l.city, l.area
+    SELECT p.*, l.city, l.area,
+           (SELECT pi.image FROM property_images pi WHERE pi.property_id = p.id AND pi.is_primary=1 AND pi.is_deleted=0 LIMIT 1) as primary_image
     FROM properties p
     LEFT JOIN locations l ON p.location_id = l.id
-    WHERE p.status = 'approved' AND p.featured = 1 AND p.is_deleted=0 AND l.is_deleted=0
-    ORDER BY p.created_at DESC LIMIT 9
+    WHERE p.status = 'approved' AND p.featured = 1 AND p.is_deleted=0
+    ORDER BY p.views DESC, p.created_at DESC LIMIT 9
 ");
 $stmtHighDemand->execute();
 $highDemandProperties = $stmtHighDemand->fetchAll();
 
 // Newly launched = latest approved
 $stmtNew = $pdo->prepare("
-    SELECT p.*, l.city, l.area
+    SELECT p.*, l.city, l.area,
+           (SELECT pi.image FROM property_images pi WHERE pi.property_id = p.id AND pi.is_primary=1 AND pi.is_deleted=0 LIMIT 1) as primary_image
     FROM properties p
     LEFT JOIN locations l ON p.location_id = l.id
-    WHERE p.status = 'approved' AND p.is_deleted=0 AND l.is_deleted=0
+    WHERE p.status = 'approved' AND p.is_deleted=0
     ORDER BY p.created_at DESC LIMIT 9
 ");
 $stmtNew->execute();
 $newProperties = $stmtNew->fetchAll();
 
-// Blogs
-$stmtBlogs = $pdo->prepare("SELECT * FROM blogs WHERE status = 'published' AND is_deleted=0 ORDER BY created_at DESC LIMIT 2");
+// Blogs (latest 6 published)
+$stmtBlogs = $pdo->prepare("SELECT * FROM blogs WHERE status = 'published' AND is_deleted=0 ORDER BY created_at DESC LIMIT 6");
 $stmtBlogs->execute();
 $blogs = $stmtBlogs->fetchAll();
 
@@ -67,17 +81,48 @@ $testimonials = $stmtTestimonials->fetchAll();
 $stmtBanners = $pdo->query("SELECT * FROM banners WHERE is_active = 1 AND is_deleted=0 ORDER BY sort_order ASC LIMIT 5");
 $banners = $stmtBanners->fetchAll();
 
+// Stats counts
+$totalProperties = $pdo->query("SELECT COUNT(*) FROM properties WHERE status='approved' AND is_deleted=0")->fetchColumn();
+$totalUsers      = $pdo->query("SELECT COUNT(*) FROM users WHERE status='active' AND is_deleted=0")->fetchColumn();
+$totalLocations  = $pdo->query("SELECT COUNT(DISTINCT city) FROM locations WHERE is_deleted=0")->fetchColumn();
+
+// Top developers/builders
+$stmtDevs = $pdo->query("SELECT u.id, u.name, COUNT(p.id) as prop_count
+    FROM users u
+    LEFT JOIN properties p ON p.user_id = u.id AND p.status='approved' AND p.is_deleted=0
+    WHERE u.role = 'builder' AND u.status='active' AND u.is_deleted=0
+    GROUP BY u.id
+    ORDER BY prop_count DESC LIMIT 6");
+$topDevelopers = $stmtDevs->fetchAll();
+
+// Top agents
+$stmtAgents = $pdo->query("SELECT u.id, u.name, u.role, u.city, u.state, COUNT(p.id) as prop_count
+    FROM users u
+    LEFT JOIN properties p ON p.user_id = u.id AND p.status='approved' AND p.is_deleted=0
+    WHERE u.role IN ('agent','builder') AND u.status='active' AND u.is_deleted=0
+    GROUP BY u.id
+    ORDER BY prop_count DESC LIMIT 6");
+$topAgents = $stmtAgents->fetchAll();
+
 include __DIR__ . '/includes/header.php';
 ?>
 
 <!-- ========== HERO SECTION ========== -->
 <section class="d-flex flex-column p-0">
-    <div style="background-image: url('assets/img/banner.jpg')" class="bg-cover d-flex align-items-center custom-vh-100">
+    <?php
+        $bannerBg = 'assets/img/banner.jpg';
+        if (!empty($banners[0]['image']) && file_exists(UPLOAD_DIR . 'banners/' . $banners[0]['image'])) {
+            $bannerBg = UPLOAD_URL . 'banners/' . htmlspecialchars($banners[0]['image']);
+        }
+    ?>
+    <div style="background-image: url('<?= $bannerBg ?>')" class="bg-cover d-flex align-items-center custom-vh-100">
         <div class="container pt-20 pb-15" data-animate="zoomIn">
             <p class="text-white fs-md-22 fs-18 font-weight-500 letter-spacing-367 mb-1 text-center text-uppercase">
-                Let us guide your home
+                <?= htmlspecialchars($banners[0]['subtitle'] ?? 'Let us guide your home') ?>
             </p>
-            <h2 class="text-white display-2 text-center mb-sm-8 mb-8">Find Your Dream Home</h2>
+            <h2 class="text-white display-2 text-center mb-sm-8 mb-8">
+                <?= htmlspecialchars($banners[0]['title'] ?? 'Find Your Dream Home') ?>
+            </h2>
 
             <!-- Desktop Search Form -->
             <form class="property-search py-lg-0 z-index-2 position-relative d-none d-lg-block" action="<?= SITE_URL ?>properties.php" method="GET">
@@ -118,7 +163,7 @@ include __DIR__ . '/includes/header.php';
                         <div class="col-md-6 col-lg-4 col-xl-5 pt-6 pt-lg-0 order-2">
                             <label class="text-uppercase font-weight-500 letter-spacing-093">Search</label>
                             <div class="position-relative">
-                                <input type="text" name="search" class="form-control bg-transparent shadow-none border-top-0 border-right-0 border-left-0 border-bottom rounded-0 h-24 lh-17 pl-0 pr-4 font-weight-600 border-color-input placeholder-muted" placeholder="Find something...">
+                                <input type="text" name="search" class="form-control bg-transparent shadow-none border-top-0 border-right-0 border-left-0 border-bottom rounded-0 h-24 lh-17 pl-0 pr-4 font-weight-600 border-color-input placeholder-muted" placeholder="Search project, locality or builder...">
                                 <i class="far fa-search position-absolute pos-fixed-right-center pr-0 fs-18 mt-n3"></i>
                             </div>
                         </div>
@@ -131,12 +176,17 @@ include __DIR__ . '/includes/header.php';
                         <!-- Amenities / Features -->
                         <div class="col-12 pt-4 pb-sm-4 order-sm-5 order-4">
                             <div class="row pt-2">
-                                <?php 
-                                $amenities = ['ac'=>'Conditioning', 'laundry'=>'Laundry', 'washer'=>'Washer', 'refrigerator'=>'Refrigerator'];
+                                <?php
+                                $searchFeatures = [
+                                    'ready_to_move'      => 'Ready to Move',
+                                    'under_construction'  => 'Under Construction',
+                                    'new_launch'          => 'New Launch',
+                                    'verified'            => 'Verified Only',
+                                ];
                                 $i = 1;
-                                foreach($amenities as $val => $label): 
+                                foreach($searchFeatures as $val => $label):
                                 ?>
-                                    <div class="col-sm-6 col-md-3 col-lg-2 py-2">
+                                    <div class="col-sm-6 col-md-3 col-lg-3 py-2">
                                         <div class="custom-control custom-checkbox">
                                             <input type="checkbox" class="custom-control-input" id="check<?= $i ?>-4" name="features[]" value="<?= $val ?>">
                                             <label class="custom-control-label" for="check<?= $i ?>-4"><?= $label ?></label>
@@ -159,51 +209,55 @@ include __DIR__ . '/includes/header.php';
     <div class="container">
         <div class="section-heading">
             <h2>Explore Property Types</h2>
-            <p>Lorem ipsum dolor sit amet, consec tetur cing elit. Suspe ndisse suscipit</p>
+            <p>Browse properties by type and find your perfect match</p>
         </div>
         <div class="swiper location-slider">
             <div class="swiper-wrapper">
                 <?php
-                $locationImages = [
-                    'https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=400&q=75',
-                    'https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=400&q=75',
-                    'https://images.unsplash.com/photo-1501594907352-04cda38ebc29?w=400&q=75',
-                    'https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=400&q=75',
-                    'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=400&q=75',
-                    'https://images.unsplash.com/photo-1444723121867-7a241cacace9?w=400&q=75',
-                    'https://images.unsplash.com/photo-1514565131-fce0801e5785?w=400&q=75',
-                    'https://images.unsplash.com/photo-1494526585095-c41746248156?w=400&q=75',
+                $typeCards = [
+                    ['type' => 'apartment', 'label' => 'Apartments', 'icon' => 'fas fa-building',        'img' => 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=400&q=75'],
+                    ['type' => 'villa',     'label' => 'Villas',     'icon' => 'fas fa-home',             'img' => 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=400&q=75'],
+                    ['type' => 'plot',      'label' => 'Plots & Land','icon' => 'fas fa-seedling',        'img' => 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=400&q=75'],
+                    ['type' => 'commercial','label' => 'Commercial', 'icon' => 'fas fa-store',            'img' => 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&q=75'],
+                    ['type' => 'office',    'label' => 'Office Space','icon' => 'fas fa-briefcase',       'img' => 'https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=400&q=75'],
                 ];
-                if (!empty($locations)):
-                    foreach ($locations as $i => $loc):
-                        $img = $locationImages[$i % count($locationImages)];
+                // Get counts per type
+                $typeCounts = [];
+                $tcStmt = $pdo->query("SELECT property_type, COUNT(*) as cnt FROM properties WHERE status='approved' AND is_deleted=0 GROUP BY property_type");
+                foreach ($tcStmt as $tc) $typeCounts[$tc['property_type']] = $tc['cnt'];
+
+                foreach ($typeCards as $tc):
+                    $count = $typeCounts[$tc['type']] ?? 0;
                 ?>
                 <div class="swiper-slide">
-                    <div class="location-card">
-                        <img src="<?= $img ?>" alt="<?= htmlspecialchars($loc['city']) ?>">
-                        <div class="overlay">
-                            <h4><?= htmlspecialchars($loc['city']) ?></h4>
+                    <a href="<?= SITE_URL ?>properties.php?type=<?= $tc['type'] ?>">
+                        <div class="location-card">
+                            <img src="<?= $tc['img'] ?>" alt="<?= $tc['label'] ?>">
+                            <div class="overlay">
+                                <h4><?= $tc['label'] ?></h4>
+                                <p style="color:#fff;font-size:13px;margin:0;"><?= $count ?> Properties</p>
+                            </div>
                         </div>
-                    </div>
+                    </a>
                 </div>
+                <?php endforeach; ?>
+
                 <?php
-                    endforeach;
-                else:
-                    $defaultCities = ['New York', 'Ghaziabad', 'San Jose', 'Fort Worth'];
-                    foreach ($defaultCities as $i => $city):
+                // Also add top cities as location cards
+                foreach ($locations as $loc):
                 ?>
                 <div class="swiper-slide">
-                    <div class="location-card">
-                        <img src="<?= $locationImages[$i] ?>" alt="<?= $city ?>">
-                        <div class="overlay">
-                            <h4><?= $city ?></h4>
+                    <a href="<?= SITE_URL ?>properties.php?city=<?= urlencode($loc['city']) ?>">
+                        <div class="location-card">
+                            <img src="https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=400&q=75" alt="<?= htmlspecialchars($loc['city']) ?>">
+                            <div class="overlay">
+                                <h4><?= htmlspecialchars($loc['city']) ?></h4>
+                                <p style="color:#fff;font-size:13px;margin:0;"><?= $loc['prop_count'] ?> Properties</p>
+                            </div>
                         </div>
-                    </div>
+                    </a>
                 </div>
-                <?php
-                    endforeach;
-                endif;
-                ?>
+                <?php endforeach; ?>
             </div>
             <div class="swiper-button-prev loc-prev"></div>
             <div class="swiper-button-next loc-next"></div>
@@ -211,21 +265,21 @@ include __DIR__ . '/includes/header.php';
     </div>
 </section>
 
-<!-- ========== ABOUT THIS PROPERTY ========== -->
+<!-- ========== STATS COUNTER ========== -->
 <section class="about-property section-white">
     <div class="container">
-        <h2>About This Property</h2>
+        <h2>Why Choose <?= htmlspecialchars($siteName) ?>?</h2>
         <div class="row g-3">
             <?php
             $stats = [
-                ['icon' => 'fas fa-building',       'label' => 'TYPE',      'value' => 'Single Family'],
-                ['icon' => 'fas fa-calendar-alt',    'label' => 'YEAR BUILT','value' => '2020'],
-                ['icon' => 'fas fa-fire',            'label' => 'HEATING',   'value' => 'Radiant'],
-                ['icon' => 'fas fa-ruler-combined',  'label' => 'SQFT',      'value' => '979.0'],
-                ['icon' => 'fas fa-bed',             'label' => 'BEDROOMS',  'value' => '3'],
-                ['icon' => 'fas fa-bath',            'label' => 'BATHROOMS', 'value' => '2'],
-                ['icon' => 'fas fa-car',             'label' => 'GARAGE',    'value' => '1'],
-                ['icon' => 'fas fa-check-circle',    'label' => 'STATUS',    'value' => 'Active'],
+                ['icon' => 'fas fa-building',       'label' => 'TOTAL PROPERTIES', 'value' => number_format($totalProperties) . '+'],
+                ['icon' => 'fas fa-users',           'label' => 'HAPPY USERS',      'value' => number_format($totalUsers) . '+'],
+                ['icon' => 'fas fa-map-marker-alt',  'label' => 'CITIES COVERED',   'value' => $totalLocations . '+'],
+                ['icon' => 'fas fa-check-circle',    'label' => 'VERIFIED LISTINGS','value' => number_format($totalProperties)],
+                ['icon' => 'fas fa-home',            'label' => 'APARTMENTS',       'value' => number_format($typeCounts['apartment'] ?? 0)],
+                ['icon' => 'fas fa-store',           'label' => 'COMMERCIAL',       'value' => number_format($typeCounts['commercial'] ?? 0)],
+                ['icon' => 'fas fa-seedling',        'label' => 'PLOTS & LAND',     'value' => number_format($typeCounts['plot'] ?? 0)],
+                ['icon' => 'fas fa-crown',           'label' => 'LUXURY VILLAS',    'value' => number_format($typeCounts['villa'] ?? 0)],
             ];
             foreach ($stats as $stat):
             ?>
@@ -245,7 +299,7 @@ include __DIR__ . '/includes/header.php';
 
 <?php
 // ---- Helper: Render a property slider section ----
-function renderPropertySection($title, $properties, $siteUrl, $uploadUrl, $showSeeAll = true) {
+function renderPropertySection($title, $subtitle, $properties, $siteUrl, $uploadUrl, $showSeeAll = true) {
     if (empty($properties)) return;
     ?>
     <section>
@@ -253,10 +307,10 @@ function renderPropertySection($title, $properties, $siteUrl, $uploadUrl, $showS
             <div class="section-heading d-flex justify-content-between align-items-start flex-wrap">
                 <div>
                     <h2><?= htmlspecialchars($title) ?></h2>
-                    <p>Lorem ipsum dolor sit amet, consec tetur cing elit. Suspe ndisse suscipit</p>
+                    <p><?= htmlspecialchars($subtitle) ?></p>
                 </div>
                 <?php if ($showSeeAll): ?>
-                <a href="<?= $siteUrl ?>properties" class="see-all">See all properties <i class="fas fa-arrow-right ms-1"></i></a>
+                <a href="<?= $siteUrl ?>properties.php" class="see-all">See all properties <i class="fas fa-arrow-right ms-1"></i></a>
                 <?php endif; ?>
             </div>
             <div class="swiper property-slider">
@@ -266,12 +320,18 @@ function renderPropertySection($title, $properties, $siteUrl, $uploadUrl, $showS
                         <div class="property-card">
                             <div class="card-thumb">
                                 <?php
-                                $thumb = 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=400&q=75';
-                                if (!empty($prop['featured_image'])) {
+                                $thumb = '';
+                                if (!empty($prop['primary_image'])) {
+                                    $thumb = $uploadUrl . 'properties/' . $prop['primary_image'];
+                                } elseif (!empty($prop['featured_image'])) {
                                     $thumb = $uploadUrl . 'properties/' . $prop['featured_image'];
+                                } else {
+                                    $thumb = 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=400&q=75';
                                 }
                                 ?>
-                                <img src="<?= htmlspecialchars($thumb) ?>" alt="<?= htmlspecialchars($prop['title']) ?>">
+                                <a href="<?= $siteUrl ?>property-detail.php?slug=<?= htmlspecialchars($prop['slug'] ?? '') ?>">
+                                    <img src="<?= htmlspecialchars($thumb) ?>" alt="<?= htmlspecialchars($prop['title']) ?>">
+                                </a>
                                 <div class="badges">
                                     <?php if (!empty($prop['featured'])): ?>
                                     <span class="badge-tag badge-featured">Featured</span>
@@ -282,18 +342,21 @@ function renderPropertySection($title, $properties, $siteUrl, $uploadUrl, $showS
                                 </div>
                             </div>
                             <div class="card-body">
-                                <h5><?= htmlspecialchars($prop['title']) ?></h5>
+                                <h5><a href="<?= $siteUrl ?>property-detail.php?slug=<?= htmlspecialchars($prop['slug'] ?? '') ?>" style="color:inherit;text-decoration:none;">
+                                    <?= htmlspecialchars($prop['title']) ?>
+                                </a></h5>
                                 <p class="location">
+                                    <i class="fas fa-map-marker-alt" style="color:#0d6efd;margin-right:4px;font-size:12px;"></i>
                                     <?= htmlspecialchars(($prop['area'] ?? '') . ($prop['area'] && $prop['city'] ? ', ' : '') . ($prop['city'] ?? '')) ?>
                                 </p>
                                 <div class="property-meta">
-                                    <?php if ($prop['bedrooms']): ?>
+                                    <?php if (!empty($prop['bedrooms'])): ?>
                                     <span><i class="fas fa-bed"></i> <?= $prop['bedrooms'] ?> Br</span>
                                     <?php endif; ?>
-                                    <?php if ($prop['bathrooms']): ?>
+                                    <?php if (!empty($prop['bathrooms'])): ?>
                                     <span><i class="fas fa-bath"></i> <?= $prop['bathrooms'] ?> Ba</span>
                                     <?php endif; ?>
-                                    <?php if ($prop['area_sqft']): ?>
+                                    <?php if (!empty($prop['area_sqft'])): ?>
                                     <span><i class="fas fa-ruler-combined"></i> <?= number_format($prop['area_sqft']) ?> Sq.Ft</span>
                                     <?php endif; ?>
                                 </div>
@@ -313,7 +376,7 @@ function renderPropertySection($title, $properties, $siteUrl, $uploadUrl, $showS
                                         elseif ($priceType === 'per_sqft') echo ' <small>/ sq.ft</small>';
                                         ?>
                                     </div>
-                                    <a href="<?= $siteUrl ?>property/<?= htmlspecialchars($prop['slug'] ?? '') ?>" class="arrow-link">
+                                    <a href="<?= $siteUrl ?>property-detail.php?slug=<?= htmlspecialchars($prop['slug'] ?? '') ?>" class="arrow-link">
                                         <i class="fas fa-arrow-right"></i>
                                     </a>
                                 </div>
@@ -330,20 +393,56 @@ function renderPropertySection($title, $properties, $siteUrl, $uploadUrl, $showS
 }
 ?>
 
-<!-- ========== EXPLORE TRENDING LOCATIONS ========== -->
-<?php renderPropertySection('Explore Trending Locations', $trendingProperties, SITE_URL, UPLOAD_URL); ?>
+<!-- ========== TRENDING PROPERTIES ========== -->
+<?php renderPropertySection('Trending Properties', 'Most viewed properties this week', $trendingProperties, SITE_URL, UPLOAD_URL); ?>
 
 <!-- ========== RECOMMENDED ========== -->
-<?php renderPropertySection('Recommended in Ghaziabad', $recommendedProperties, SITE_URL, UPLOAD_URL); ?>
+<?php renderPropertySection('Recommended For You', 'Handpicked properties based on demand', $recommendedProperties, SITE_URL, UPLOAD_URL); ?>
 
 <!-- ========== HIGH DEMAND ========== -->
-<?php renderPropertySection('High Demand in Ghaziabad', $highDemandProperties, SITE_URL, UPLOAD_URL); ?>
-
-<!-- ========== EXPLORE BY POSSESSION ========== -->
-<?php renderPropertySection('Explore by Possession', $newProperties, SITE_URL, UPLOAD_URL); ?>
+<?php renderPropertySection('High Demand Properties', 'Featured properties with most enquiries', $highDemandProperties, SITE_URL, UPLOAD_URL); ?>
 
 <!-- ========== NEWLY LAUNCHED ========== -->
-<?php renderPropertySection('Newly Launched in Ghaziabad', $newProperties, SITE_URL, UPLOAD_URL); ?>
+<?php renderPropertySection('Newly Launched', 'Latest properties added on ' . htmlspecialchars($siteName), $newProperties, SITE_URL, UPLOAD_URL); ?>
+
+<!-- ========== TOP AGENTS & BUILDERS ========== -->
+<?php if (!empty($topAgents)): ?>
+<section class="section-gray">
+    <div class="container">
+        <div class="section-heading">
+            <h2>Top Agents & Builders</h2>
+            <p>Connect with verified real estate professionals</p>
+        </div>
+        <div class="row g-4">
+            <?php
+            $agentColors = ['#3b82f6','#f97316','#10b981','#8b5cf6','#ef4444','#06b6d4'];
+            foreach ($topAgents as $idx => $ag):
+                $color = $agentColors[$idx % count($agentColors)];
+                $initial = strtoupper(substr($ag['name'], 0, 1));
+            ?>
+            <div class="col-lg-2 col-md-4 col-6">
+                <div class="text-center p-3 bg-white rounded shadow-sm h-100">
+                    <div style="width:70px;height:70px;border-radius:50%;background:<?= $color ?>15;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;">
+                        <span style="font-size:24px;font-weight:800;color:<?= $color ?>"><?= $initial ?></span>
+                    </div>
+                    <h6 style="font-size:13px;font-weight:700;margin-bottom:4px;"><?= htmlspecialchars($ag['name']) ?></h6>
+                    <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:<?= $ag['role'] === 'builder' ? '#fff7ed' : '#eff6ff' ?>;color:<?= $ag['role'] === 'builder' ? '#ea580c' : '#2563eb' ?>;">
+                        <?= ucfirst($ag['role']) ?>
+                    </span>
+                    <?php if (!empty($ag['city'])): ?>
+                    <p style="font-size:11px;color:#94a3b8;margin:6px 0 0;"><i class="fas fa-map-marker-alt" style="color:#3b82f6;font-size:10px;"></i> <?= htmlspecialchars($ag['city']) ?></p>
+                    <?php endif; ?>
+                    <p style="font-size:11px;color:#94a3b8;margin:4px 0 8px;"><?= $ag['prop_count'] ?> Properties</p>
+                    <a href="<?= SITE_URL ?>properties.php?agent=<?= $ag['id'] ?>" style="display:block;padding:6px;background:#2563eb;color:#fff;border-radius:8px;font-size:10px;font-weight:700;text-decoration:none;text-transform:uppercase;letter-spacing:1px;">
+                        <i class="fas fa-eye" style="font-size:9px;"></i> View Properties
+                    </a>
+                </div>
+            </div>
+            <?php endforeach; ?>
+        </div>
+    </div>
+</section>
+<?php endif; ?>
 
 <!-- ========== FIND YOUR NEIGHBORHOOD ========== -->
 <section class="neighborhood-section">
@@ -351,17 +450,17 @@ function renderPropertySection($title, $properties, $siteUrl, $uploadUrl, $showS
         <div class="row align-items-center">
             <div class="col-lg-5">
                 <div class="neighborhood-img">
-                    <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=500&q=80" alt="Neighborhood">
+                    <img src="assets/img/single-image-02.png" alt="Find your neighborhood" onerror="this.src='https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=500&q=80'">
                 </div>
             </div>
             <div class="col-lg-6 offset-lg-1">
                 <div class="content">
                     <h2>Find your<br>neighborhood</h2>
-                    <p>Lorem ipsum dolor sit amet, consec tetur cing elit. Suspe ndisse</p>
-                    <div class="neighborhood-search">
-                        <input type="text" placeholder="Enter an address, neighbourhood">
-                        <button><i class="fas fa-search"></i></button>
-                    </div>
+                    <p>Search properties by locality, city or project name across India</p>
+                    <form class="neighborhood-search" action="<?= SITE_URL ?>properties.php" method="GET">
+                        <input type="text" name="search" placeholder="Enter city, locality or project name">
+                        <button type="submit"><i class="fas fa-search"></i></button>
+                    </form>
                 </div>
             </div>
         </div>
@@ -372,14 +471,14 @@ function renderPropertySection($title, $properties, $siteUrl, $uploadUrl, $showS
 <section class="services-section bg-patten-04">
     <div class="container">
         <div class="top-text">
-            <h2>We have the most listings and constant updates.So you'll never miss out.</h2>
+            <h2>We have the most listings and constant updates. So you'll never miss out.</h2>
         </div>
         <div class="row g-4">
             <?php
             $services = [
-                ['icon' => 'fas fa-home',       'title' => 'Buy a new home',  'desc' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor'],
-                ['icon' => 'fas fa-hand-holding-usd', 'title' => 'Sell a home', 'desc' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor'],
-                ['icon' => 'fas fa-key',         'title' => 'Rent a home',    'desc' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor'],
+                ['icon' => 'fas fa-home',             'title' => 'Buy a Home',       'desc' => 'Browse ' . number_format($totalProperties) . '+ verified properties across ' . $totalLocations . '+ cities. Find your dream home today.'],
+                ['icon' => 'fas fa-hand-holding-usd', 'title' => 'Sell Your Property','desc' => 'List your property for FREE and connect with thousands of genuine buyers. Quick and easy process.'],
+                ['icon' => 'fas fa-key',              'title' => 'Rent a Home',       'desc' => 'Find affordable rental properties near you. Verified listings with no brokerage options available.'],
             ];
             foreach ($services as $svc):
             ?>
@@ -387,13 +486,13 @@ function renderPropertySection($title, $properties, $siteUrl, $uploadUrl, $showS
                 <div class="service-card">
                     <div class="row">
                         <div class="col-md-3">
-                    <div class="icon"><i class="<?= $svc['icon'] ?>"></i></div>
-                </div>
-                <div class="col-md-9">
-                    <h5><?= $svc['title'] ?></h5>
-                    <p><?= $svc['desc'] ?></p>
-                </div>
-                </div>
+                            <div class="icon"><i class="<?= $svc['icon'] ?>"></i></div>
+                        </div>
+                        <div class="col-md-9">
+                            <h5><?= $svc['title'] ?></h5>
+                            <p><?= $svc['desc'] ?></p>
+                        </div>
+                    </div>
                 </div>
             </div>
             <?php endforeach; ?>
@@ -409,18 +508,28 @@ function renderPropertySection($title, $properties, $siteUrl, $uploadUrl, $showS
                 <div class="blog-sidebar">
                     <h3>BLOG & NEWS</h3>
                     <h2>Interesting Articles Updated Daily</h2>
-                    <a href="#" class="article-link"><i class="fas fa-arrow-right"></i> Opening a new store in NYC</a>
-                    <a href="#" class="article-link"><i class="fas fa-arrow-right"></i> 5 Famous Progressive Web Apps</a>
-                    <a href="#" class="article-link"><i class="fas fa-arrow-right"></i> How to Create an Effective Elevator Pitch</a>
-                    <a href="#" class="article-link"><i class="fas fa-arrow-right"></i> Top Strategic Technology Trends for 2020</a>
-                    <a href="#" class="article-link"><i class="fas fa-arrow-right"></i> The Quest for Better Web Accessibility</a>
+                    <?php
+                    // Show latest blog titles as sidebar links
+                    if (!empty($blogs)):
+                        foreach (array_slice($blogs, 0, 5) as $sb):
+                    ?>
+                    <a href="<?= SITE_URL ?>blog-detail.php?slug=<?= htmlspecialchars($sb['slug']) ?>" class="article-link">
+                        <i class="fas fa-arrow-right"></i> <?= htmlspecialchars(mb_substr($sb['title'], 0, 50)) ?><?= mb_strlen($sb['title']) > 50 ? '...' : '' ?>
+                    </a>
+                    <?php
+                        endforeach;
+                    else:
+                    ?>
+                    <a href="<?= SITE_URL ?>blogs.php" class="article-link"><i class="fas fa-arrow-right"></i> View all articles</a>
+                    <?php endif; ?>
+                    <a href="<?= SITE_URL ?>blogs.php" class="btn btn-outline-primary btn-sm mt-3">View All Articles <i class="fas fa-arrow-right ms-1"></i></a>
                 </div>
             </div>
             <div class="col-lg-8">
                 <div class="row g-4">
                     <?php
                     if (!empty($blogs)):
-                        foreach ($blogs as $blog):
+                        foreach (array_slice($blogs, 0, 2) as $blog):
                             $blogImg = !empty($blog['featured_image'])
                                 ? UPLOAD_URL . 'blogs/' . $blog['featured_image']
                                 : 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=400&q=75';
@@ -428,15 +537,19 @@ function renderPropertySection($title, $properties, $siteUrl, $uploadUrl, $showS
                     <div class="col-md-6">
                         <div class="blog-card">
                             <div class="blog-thumb hover-shine">
-                                <img src="<?= htmlspecialchars($blogImg) ?>" alt="<?= htmlspecialchars($blog['title']) ?>">
-                                <span class="blog-category"><?= htmlspecialchars($blog['category'] ?? 'RENTAL') ?></span>
+                                <a href="<?= SITE_URL ?>blog-detail.php?slug=<?= htmlspecialchars($blog['slug']) ?>">
+                                    <img src="<?= htmlspecialchars($blogImg) ?>" alt="<?= htmlspecialchars($blog['title']) ?>">
+                                </a>
+                                <span class="blog-category"><?= htmlspecialchars($blog['category'] ?? 'News') ?></span>
                             </div>
                             <div class="blog-body">
                                 <div class="blog-meta">
                                     <span><i class="far fa-calendar"></i> <?= date('jS M, Y', strtotime($blog['created_at'])) ?></span>
                                     <span><i class="far fa-eye"></i> <?= $blog['views'] ?? 0 ?> views</span>
                                 </div>
-                                <h5><?= htmlspecialchars($blog['title']) ?></h5>
+                                <h5><a href="<?= SITE_URL ?>blog-detail.php?slug=<?= htmlspecialchars($blog['slug']) ?>" style="color:inherit;text-decoration:none;">
+                                    <?= htmlspecialchars($blog['title']) ?>
+                                </a></h5>
                                 <p><?= htmlspecialchars(mb_substr($blog['short_description'] ?? '', 0, 120)) ?>...</p>
                                 <a href="<?= SITE_URL ?>blog-detail.php?slug=<?= htmlspecialchars($blog['slug']) ?>" class="read-more">
                                     Read more <i class="fas fa-arrow-right"></i>
@@ -447,34 +560,12 @@ function renderPropertySection($title, $properties, $siteUrl, $uploadUrl, $showS
                     <?php
                         endforeach;
                     else:
-                        // Default placeholder blogs
-                        $placeholderBlogs = [
-                            ['title' => 'Retail banks wake up to digital lending this year', 'img' => 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=400&q=75'],
-                            ['title' => 'Within the construction industry as their overdraft', 'img' => 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=400&q=75'],
-                        ];
-                        foreach ($placeholderBlogs as $pb):
                     ?>
-                    <div class="col-md-6">
-                        <div class="blog-card">
-                            <div class="blog-thumb hover-shine">
-                                <img src="<?= $pb['img'] ?>" alt="Blog">
-                                <span class="blog-category">RENTAL</span>
-                            </div>
-                            <div class="blog-body">
-                                <div class="blog-meta">
-                                    <span><i class="far fa-calendar"></i> 30th Dec, 2020</span>
-                                    <span><i class="far fa-eye"></i> 149 views</span>
-                                </div>
-                                <h5><?= $pb['title'] ?></h5>
-                                <p>Lorem ipsum dolor sit amet, consecte tur cing elit. Suspe ndisse suscipit sagittis leo sit met condim entum, consecte tur cineoi</p>
-                                <a href="#" class="read-more btn-accent">Read more <i class="fas fa-arrow-right"></i></a>
-                            </div>
-                        </div>
+                    <div class="col-12 text-center py-5">
+                        <p class="text-muted">No blog posts yet. Check back soon!</p>
+                        <a href="<?= SITE_URL ?>blogs.php" class="btn btn-primary">View Blog</a>
                     </div>
-                    <?php
-                        endforeach;
-                    endif;
-                    ?>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
@@ -502,13 +593,13 @@ function renderPropertySection($title, $properties, $siteUrl, $uploadUrl, $showS
                         <p class="testimonial-text"><?= htmlspecialchars($t['content']) ?></p>
                         <div class="testimonial-author">
                             <?php if (!empty($t['photo'])): ?>
-                            <img src="<?= UPLOAD_URL ?>testimonials/<?= htmlspecialchars($t['photo']) ?>" alt="">
+                            <img src="<?= UPLOAD_URL ?>testimonials/<?= htmlspecialchars($t['photo']) ?>" alt="<?= htmlspecialchars($t['name']) ?>">
                             <?php else: ?>
                             <div class="testimonial-avatar"><?= strtoupper(substr($t['name'], 0, 1)) ?></div>
                             <?php endif; ?>
                             <div>
                                 <strong><?= htmlspecialchars($t['name']) ?></strong>
-                                <?php if ($t['designation']): ?><small><?= htmlspecialchars($t['designation']) ?></small><?php endif; ?>
+                                <?php if (!empty($t['designation'])): ?><small><?= htmlspecialchars($t['designation']) ?></small><?php endif; ?>
                             </div>
                         </div>
                     </div>
@@ -522,24 +613,59 @@ function renderPropertySection($title, $properties, $siteUrl, $uploadUrl, $showS
 <?php endif; ?>
 
 <!-- ========== CTA CONTACT ========== -->
-<section class="bg-single-image-02 bg-accent py-lg-13 py-11" data-animated-id="13">
-        <div class="container">
-          <div class="row">
-            <div class="col-ld-6 col-sm-7 fadeInLeft animated" data-animate="fadeInLeft">
-              <div class="pl-6 border-4x border-left border-primary">
-                <h2 class="text-heading lh-15 fs-md-32 fs-25">For more information about our services,<span class="text-primary"> get in touch</span> with our expert consultants</h2>
-                <p class="lh-2 fs-md-15 mb-0">10 new offers every day. 350 offers on site, Trusted by a community of thousands of users.</p>
-              </div>
+<section class="bg-single-image-02 bg-accent py-lg-13 py-11">
+    <div class="container">
+        <div class="row">
+            <div class="col-ld-6 col-sm-7" data-animate="fadeInLeft">
+                <div class="pl-6 border-4x border-left border-primary">
+                    <h2 class="text-heading lh-15 fs-md-32 fs-25">For more information about our services,<span class="text-primary"> get in touch</span> with our expert consultants</h2>
+                    <p class="lh-2 fs-md-15 mb-0"><?= number_format($totalProperties) ?> properties listed. <?= number_format($totalUsers) ?> registered users. Trusted by a growing community.</p>
+                </div>
             </div>
-            <div class="col-ld-6 col-sm-5 text-center mt-sm-0 mt-8 fadeInRight animated" data-animate="fadeInRight">
-              <i class="fa fa-phone fs-40 text-primary"></i>
-              <p class="fs-13 font-weight-500 letter-spacing-173 text-uppercase lh-2 mt-3">Call for help now!</p>
-              <p class="fs-md-42 fs-32 font-weight-600 text-secondary lh-1">9876543210</p>
-              <a href="#" class="btn btn-lg btn-primary mt-2 px-10">Contact us</a>
+            <div class="col-ld-6 col-sm-5 text-center mt-sm-0 mt-8" data-animate="fadeInRight">
+                <i class="fa fa-phone fs-40 text-primary"></i>
+                <p class="fs-13 font-weight-500 letter-spacing-173 text-uppercase lh-2 mt-3">Call for help now!</p>
+                <p class="fs-md-42 fs-32 font-weight-600 text-secondary lh-1">
+                    <?php if ($sitePhone): ?>
+                        <a href="tel:+91<?= htmlspecialchars($sitePhone) ?>" style="color:inherit;text-decoration:none;">
+                            <?= htmlspecialchars($sitePhone) ?>
+                        </a>
+                    <?php else: ?>
+                        <a href="<?= SITE_URL ?>contact.php" style="color:inherit;text-decoration:none;">Contact Us</a>
+                    <?php endif; ?>
+                </p>
+                <a href="<?= SITE_URL ?>contact.php" class="btn btn-lg btn-primary mt-2 px-10">Contact us</a>
             </div>
-          </div>
         </div>
-      </section>
+    </div>
+</section>
+
+<!-- ========== TOP DEVELOPERS ========== -->
+<?php if (!empty($topDevelopers)): ?>
+<section>
+    <div class="container">
+        <div class="section-heading">
+            <h2>Top Developers</h2>
+            <p>India's most trusted builders on <?= htmlspecialchars($siteName) ?></p>
+        </div>
+        <div class="row g-4 justify-content-center">
+            <?php foreach ($topDevelopers as $dev): ?>
+            <div class="col-lg-2 col-md-3 col-4">
+                <a href="<?= SITE_URL ?>properties.php?agent=<?= $dev['id'] ?>" style="text-decoration:none;">
+                    <div class="text-center p-3 bg-white rounded shadow-sm h-100 border" style="transition:all .3s;">
+                        <div style="width:56px;height:56px;background:linear-gradient(135deg,#eff6ff,#e0e7ff);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;font-size:22px;">
+                            🏢
+                        </div>
+                        <h6 style="font-size:12px;font-weight:700;color:#1e293b;margin:0;"><?= htmlspecialchars($dev['name']) ?></h6>
+                        <p style="font-size:11px;font-weight:600;color:#2563eb;margin:4px 0 0;"><?= $dev['prop_count'] ?> Projects</p>
+                    </div>
+                </a>
+            </div>
+            <?php endforeach; ?>
+        </div>
+    </div>
+</section>
+<?php endif; ?>
 
 <!-- ========== PARTNER LOGOS ========== -->
 <section class="partners-section">
@@ -547,11 +673,11 @@ function renderPropertySection($title, $properties, $siteUrl, $uploadUrl, $showS
         <div class="row align-items-center">
             <?php
             $partners = [
-                ['icon' => 'fas fa-shield-alt', 'name' => 'BASTILLE'],
-                ['icon' => 'fas fa-home',       'name' => 'HOUSE'],
-                ['icon' => 'fas fa-building',   'name' => 'REAL ESTATE'],
-                ['icon' => 'fas fa-leaf',       'name' => 'ECOHOUSE'],
-                ['icon' => 'fas fa-home',       'name' => 'Real Estate'],
+                ['icon' => 'fas fa-shield-alt', 'name' => 'RERA Verified'],
+                ['icon' => 'fas fa-home',       'name' => htmlspecialchars($siteName)],
+                ['icon' => 'fas fa-building',   'name' => 'Trusted Builders'],
+                ['icon' => 'fas fa-leaf',       'name' => 'Eco Homes'],
+                ['icon' => 'fas fa-handshake',  'name' => 'No Brokerage'],
             ];
             foreach ($partners as $p):
             ?>

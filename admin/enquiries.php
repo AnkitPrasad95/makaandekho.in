@@ -1,8 +1,11 @@
-<?php require_once 'includes/header.php'; ?>
-
 <?php
-// CSV Export
+// CSV Export — must run BEFORE header.php to avoid HTML output
+if (session_status() === PHP_SESSION_NONE) session_start();
+require_once __DIR__ . '/../includes/db.php';
+require_once __DIR__ . '/includes/auth.php';
+
 if (isset($_GET['export']) && $_GET['export'] === 'csv') {
+    require_auth();
     $rows = $pdo->query("
         SELECT e.id, e.name, e.email, e.phone, e.message, e.status, e.created_at,
                p.title AS property_title
@@ -12,20 +15,27 @@ if (isset($_GET['export']) && $_GET['export'] === 'csv') {
         ORDER BY e.created_at DESC
     ")->fetchAll();
 
-    header('Content-Type: text/csv');
+    header('Content-Type: text/csv; charset=utf-8');
     header('Content-Disposition: attachment; filename="enquiries_' . date('Ymd_His') . '.csv"');
+    header('Pragma: no-cache');
+    header('Expires: 0');
     $f = fopen('php://output', 'w');
+    // UTF-8 BOM for Excel compatibility
+    fprintf($f, chr(0xEF).chr(0xBB).chr(0xBF));
     fputcsv($f, ['ID','Name','Email','Phone','Property','Message','Status','Date']);
     foreach ($rows as $r) {
         fputcsv($f, [
             $r['id'], $r['name'], $r['email'], $r['phone'],
             $r['property_title'] ?? 'General', $r['message'],
-            $r['status'], $r['created_at'],
+            ucfirst($r['status']), $r['created_at'],
         ]);
     }
     fclose($f);
     exit;
 }
+
+require_once 'includes/header.php';
+?><?php
 
 // Mark as read
 if (isset($_GET['mark_read']) && is_numeric($_GET['mark_read'])) {

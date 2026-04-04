@@ -9,8 +9,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $site_name       = trim($_POST['site_name']       ?? '');
     $email           = trim($_POST['email']            ?? '');
     $whatsapp        = trim($_POST['whatsapp_number']  ?? '');
+    $phone           = trim($_POST['phone']            ?? '');
     $address         = trim($_POST['address']          ?? '');
     $footer_text     = trim($_POST['footer_text']      ?? '');
+    $facebook        = trim($_POST['facebook']         ?? '');
+    $instagram       = trim($_POST['instagram']        ?? '');
+    $twitter         = trim($_POST['twitter']          ?? '');
+    $youtube         = trim($_POST['youtube']          ?? '');
+    $linkedin        = trim($_POST['linkedin']         ?? '');
     $smtp_host       = trim($_POST['smtp_host']        ?? '');
     $smtp_user       = trim($_POST['smtp_user']        ?? '');
     $smtp_pass       = trim($_POST['smtp_pass']        ?? '');
@@ -74,20 +80,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
+    // Keep existing SMTP password if left blank
+    if (empty($smtp_pass) && !empty($settings['smtp_pass'])) {
+        $smtp_pass = $settings['smtp_pass'];
+    }
+
     if (!$settings) {
         $pdo->prepare("INSERT INTO settings
-            (site_name,email,whatsapp_number,address,footer_text,smtp_host,smtp_user,smtp_pass,smtp_port,site_logo,favicon,meta_title,meta_description,meta_keywords)
-            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
-            ->execute([$site_name,$email,$whatsapp,$address,$footer_text,$smtp_host,$smtp_user,$smtp_pass,$smtp_port,$logo,$favicon,$meta_title,$meta_description,$meta_keywords]);
+            (site_name,email,whatsapp_number,phone,address,footer_text,facebook,instagram,twitter,youtube,linkedin,smtp_host,smtp_user,smtp_pass,smtp_port,site_logo,favicon,meta_title,meta_description,meta_keywords)
+            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
+            ->execute([$site_name,$email,$whatsapp,$phone,$address,$footer_text,$facebook,$instagram,$twitter,$youtube,$linkedin,$smtp_host,$smtp_user,$smtp_pass,$smtp_port,$logo,$favicon,$meta_title,$meta_description,$meta_keywords]);
     } else {
         $pdo->prepare("UPDATE settings SET
-            site_name=?, email=?, whatsapp_number=?, address=?,
-            footer_text=?, smtp_host=?, smtp_user=?, smtp_pass=?,
+            site_name=?, email=?, whatsapp_number=?, phone=?, address=?,
+            footer_text=?, facebook=?, instagram=?, twitter=?, youtube=?, linkedin=?,
+            smtp_host=?, smtp_user=?, smtp_pass=?,
             smtp_port=?, site_logo=?, favicon=?,
             meta_title=?, meta_description=?, meta_keywords=?,
             updated_at=NOW()
             WHERE id=1")
-            ->execute([$site_name,$email,$whatsapp,$address,$footer_text,$smtp_host,$smtp_user,$smtp_pass,$smtp_port,$logo,$favicon,$meta_title,$meta_description,$meta_keywords]);
+            ->execute([$site_name,$email,$whatsapp,$phone,$address,$footer_text,$facebook,$instagram,$twitter,$youtube,$linkedin,$smtp_host,$smtp_user,$smtp_pass,$smtp_port,$logo,$favicon,$meta_title,$meta_description,$meta_keywords]);
     }
 
     flash('success', 'Settings saved successfully.');
@@ -125,13 +137,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                    placeholder="info@makaandekho.in">
           </div>
 
-          <div class="form-group">
-            <label style="font-size:12.5px;font-weight:600;">WhatsApp Number</label>
-            <div class="input-group">
-              <div class="input-group-prepend"><span class="input-group-text">+91</span></div>
-              <input type="text" name="whatsapp_number" class="form-control"
-                     value="<?= htmlspecialchars($settings['whatsapp_number'] ?? '') ?>"
-                     placeholder="9999999999" maxlength="15">
+          <div class="row">
+            <div class="col-6">
+              <div class="form-group">
+                <label style="font-size:12.5px;font-weight:600;">Phone Number</label>
+                <div class="input-group">
+                  <div class="input-group-prepend"><span class="input-group-text">+91</span></div>
+                  <input type="text" name="phone" class="form-control"
+                         value="<?= htmlspecialchars($settings['phone'] ?? '') ?>"
+                         placeholder="9999999999" maxlength="15">
+                </div>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="form-group">
+                <label style="font-size:12.5px;font-weight:600;">WhatsApp Number</label>
+                <div class="input-group">
+                  <div class="input-group-prepend"><span class="input-group-text">+91</span></div>
+                  <input type="text" name="whatsapp_number" class="form-control"
+                         value="<?= htmlspecialchars($settings['whatsapp_number'] ?? '') ?>"
+                         placeholder="9999999999" maxlength="15">
+                </div>
+              </div>
             </div>
           </div>
 
@@ -232,6 +259,59 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     </div>
 
+  </div>
+
+  <!-- Social Media -->
+  <div class="row">
+    <div class="col-12 mb-4">
+      <div class="card">
+        <div class="card-header"><i class="fas fa-share-alt mr-2 text-danger"></i>Social Media Links</div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-lg-4">
+              <div class="form-group">
+                <label style="font-size:12.5px;font-weight:600;"><i class="fab fa-facebook text-primary mr-1"></i> Facebook</label>
+                <input type="url" name="facebook" class="form-control form-control-sm"
+                       value="<?= htmlspecialchars($settings['facebook'] ?? '') ?>"
+                       placeholder="https://facebook.com/yourpage">
+              </div>
+            </div>
+            <div class="col-lg-4">
+              <div class="form-group">
+                <label style="font-size:12.5px;font-weight:600;"><i class="fab fa-instagram text-danger mr-1"></i> Instagram</label>
+                <input type="url" name="instagram" class="form-control form-control-sm"
+                       value="<?= htmlspecialchars($settings['instagram'] ?? '') ?>"
+                       placeholder="https://instagram.com/yourpage">
+              </div>
+            </div>
+            <div class="col-lg-4">
+              <div class="form-group">
+                <label style="font-size:12.5px;font-weight:600;"><i class="fab fa-twitter text-info mr-1"></i> Twitter / X</label>
+                <input type="url" name="twitter" class="form-control form-control-sm"
+                       value="<?= htmlspecialchars($settings['twitter'] ?? '') ?>"
+                       placeholder="https://twitter.com/yourpage">
+              </div>
+            </div>
+            <div class="col-lg-4">
+              <div class="form-group mb-0">
+                <label style="font-size:12.5px;font-weight:600;"><i class="fab fa-youtube text-danger mr-1"></i> YouTube</label>
+                <input type="url" name="youtube" class="form-control form-control-sm"
+                       value="<?= htmlspecialchars($settings['youtube'] ?? '') ?>"
+                       placeholder="https://youtube.com/yourchannel">
+              </div>
+            </div>
+            <div class="col-lg-4">
+              <div class="form-group mb-0">
+                <label style="font-size:12.5px;font-weight:600;"><i class="fab fa-linkedin text-primary mr-1"></i> LinkedIn</label>
+                <input type="url" name="linkedin" class="form-control form-control-sm"
+                       value="<?= htmlspecialchars($settings['linkedin'] ?? '') ?>"
+                       placeholder="https://linkedin.com/company/yourpage">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- SEO Settings -->

@@ -2,6 +2,7 @@
 ob_start();
 session_start();
 require_once __DIR__ . '/includes/db.php';
+require_once __DIR__ . '/includes/mailer.php';
 
 $step    = 'email'; // email -> sent -> reset -> done
 $errors  = [];
@@ -48,14 +49,29 @@ if (!empty($_GET['token'])) {
 
         if ($user) {
             $token   = bin2hex(random_bytes(32));
-            $expires = date('Y-m-d H:i:s', strtotime('+1 hour'));
+            $expires = date('Y-m-d H:i:s', strtotime('+48 hours'));
             $pdo->prepare("UPDATE users SET reset_token = ?, reset_expires = ? WHERE id = ?")
                 ->execute([$token, $expires, $user['id']]);
 
-            // In production: send email with reset link
-            // For now: show the link directly
             $resetLink = SITE_URL . "forgot-password.php?token=$token";
-            $success = "Reset link generated. <a href='$resetLink' style='color:var(--primary);font-weight:600;'>Click here to reset</a> (In production, this would be emailed)";
+
+            // Send password reset email
+            $siteName = $settings['site_name'] ?? 'MakaanDekho';
+            $emailBody = '
+            <h2 style="color:#1e40af;margin:0 0 16px;font-size:20px;">Password Reset Request</h2>
+            <p>Hi, you requested a password reset for your <strong>' . htmlspecialchars($siteName) . '</strong> account.</p>
+            <div style="text-align:center;margin:24px 0;">
+                <a href="' . htmlspecialchars($resetLink) . '"
+                   style="display:inline-block;background:linear-gradient(135deg,#1e40af,#1d4ed8);color:#ffffff;text-decoration:none;padding:14px 36px;border-radius:10px;font-weight:700;font-size:15px;">
+                    Reset Password →
+                </a>
+            </div>
+            <p style="font-size:12px;color:#6b7280;">If you didn\'t request this, you can safely ignore this email.</p>
+            <p style="font-size:12px;color:#6b7280;">Link expires in 48 hours.</p>';
+
+            sendMail($email, "Password Reset - $siteName", $emailBody, $settings);
+
+            $success = "Password reset link has been sent to <strong>" . htmlspecialchars($email) . "</strong>. Please check your inbox (and spam folder).";
         }
         $step = 'sent';
     }
