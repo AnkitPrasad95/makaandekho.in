@@ -72,6 +72,13 @@
 <!-- Swiper JS -->
 <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 <!-- Custom JS -->
+
+<!-- jQuery first -->
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+
+<!-- Waypoints plugin (needed for your code) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/waypoints/4.0.1/jquery.waypoints.min.js"></script>
+
 <script src="<?= SITE_URL ?>assets/js/main.js"></script>
 </body>
 </html>

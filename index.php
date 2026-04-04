@@ -71,48 +71,85 @@ include __DIR__ . '/includes/header.php';
 ?>
 
 <!-- ========== HERO SECTION ========== -->
-<section class="hero-section">
-    <div class="container">
-        <div class="hero-content">
-            <p class="subtitle">LET US GUIDE YOUR HOME</p>
-            <h1>Find Your Dream Home</h1>
+<section class="d-flex flex-column p-0">
+    <div style="background-image: url('assets/img/banner.jpg')" class="bg-cover d-flex align-items-center custom-vh-100">
+        <div class="container pt-20 pb-15" data-animate="zoomIn">
+            <p class="text-white fs-md-22 fs-18 font-weight-500 letter-spacing-367 mb-1 text-center text-uppercase">
+                Let us guide your home
+            </p>
+            <h2 class="text-white display-2 text-center mb-sm-8 mb-8">Find Your Dream Home</h2>
 
-            <div class="hero-search">
-                <div class="search-tabs">
-                    <button class="tab-btn active" data-type="sale">
-                        <i class="fas fa-home"></i> FOR SALE
-                    </button>
-                    <button class="tab-btn" data-type="rent">
-                        <i class="fas fa-key"></i> FOR RENT
-                    </button>
-                </div>
-                <form action="<?= SITE_URL ?>properties.php" method="GET">
-                    <input type="hidden" name="listing_type" value="sale" id="listingType">
-                    <div class="search-fields">
-                        <div class="field-group">
-                            <label>Home Type</label>
-                            <select name="property_type">
-                                <option value="">Select</option>
+            <!-- Desktop Search Form -->
+            <form class="property-search py-lg-0 z-index-2 position-relative d-none d-lg-block" action="<?= SITE_URL ?>properties.php" method="GET">
+                <input type="hidden" name="status" value="for-sale" id="listingType">
+
+                <!-- Tabs -->
+                <ul class="nav nav-pills property-search-status-tab">
+                    <li class="nav-item bg-secondary rounded-top">
+                        <a href="#" class="nav-link btn shadow-none rounded-bottom-0 text-white text-btn-focus-secondary text-uppercase d-flex align-items-center fs-13 rounded-bottom-0 bg-active-white text-active-secondary letter-spacing-087 flex-md-1 px-4 py-2 active" data-toggle="pill" data-value="for-sale"
+                           onclick="document.getElementById('listingType').value='for-sale'; setActiveTab(this)">
+                            <svg class="icon icon-villa fs-22 mr-2"><use xlink:href="#icon-villa"></use></svg>
+                            For Sale
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link btn shadow-none rounded-bottom-0 text-white text-btn-focus-secondary text-uppercase d-flex align-items-center fs-13 rounded-bottom-0 bg-active-white text-active-secondary letter-spacing-087 flex-md-1 px-4 py-2" data-toggle="pill" data-value="for-rent"
+                           onclick="document.getElementById('listingType').value='for-rent'; setActiveTab(this)">
+                            <svg class="icon icon-building fs-22 mr-2"><use xlink:href="#icon-building"></use></svg>
+                            For Rent
+                        </a>
+                    </li>
+                </ul>
+
+                <!-- Search Fields -->
+                <div class="bg-white px-6 py-6 rounded-bottom rounded-top-right pb-6 pb-lg-0">
+                    <div class="row align-items-center" id="accordion-4">
+                        <!-- Home Type -->
+                        <div class="col-md-6 col-lg-4 col-xl-4 pt-6 pt-lg-0 order-1">
+                            <label class="text-uppercase font-weight-500 letter-spacing-093 mb-1">Home Type</label>
+                            <select class="form-control selectpicker bg-transparent border-bottom rounded-0 border-color-input" name="type" title="Select">
                                 <?php foreach ($propertyTypes as $val => $label): ?>
-                                <option value="<?= $val ?>"><?= $label ?></option>
+                                    <option value="<?= $val ?>"><?= $label ?></option>
                                 <?php endforeach; ?>
                             </select>
                         </div>
-                        <div class="field-group">
-                            <label>Search</label>
-                            <input type="text" name="q" placeholder="Find something...">
+
+                        <!-- Keyword Search -->
+                        <div class="col-md-6 col-lg-4 col-xl-5 pt-6 pt-lg-0 order-2">
+                            <label class="text-uppercase font-weight-500 letter-spacing-093">Search</label>
+                            <div class="position-relative">
+                                <input type="text" name="search" class="form-control bg-transparent shadow-none border-top-0 border-right-0 border-left-0 border-bottom rounded-0 h-24 lh-17 pl-0 pr-4 font-weight-600 border-color-input placeholder-muted" placeholder="Find something...">
+                                <i class="far fa-search position-absolute pos-fixed-right-center pr-0 fs-18 mt-n3"></i>
+                            </div>
                         </div>
-                        <span class="search-icon"><i class="fas fa-search"></i></span>
-                        <button type="submit" class="btn-search">Search</button>
+
+                        <!-- Submit Button -->
+                        <div class="col-sm pt-6 pt-lg-0 order-sm-4 order-5">
+                            <button type="submit" class="btn btn-primary shadow-none fs-16 font-weight-600 w-100 py-lg-2 lh-213">Search</button>
+                        </div>
+
+                        <!-- Amenities / Features -->
+                        <div class="col-12 pt-4 pb-sm-4 order-sm-5 order-4">
+                            <div class="row pt-2">
+                                <?php 
+                                $amenities = ['ac'=>'Conditioning', 'laundry'=>'Laundry', 'washer'=>'Washer', 'refrigerator'=>'Refrigerator'];
+                                $i = 1;
+                                foreach($amenities as $val => $label): 
+                                ?>
+                                    <div class="col-sm-6 col-md-3 col-lg-2 py-2">
+                                        <div class="custom-control custom-checkbox">
+                                            <input type="checkbox" class="custom-control-input" id="check<?= $i ?>-4" name="features[]" value="<?= $val ?>">
+                                            <label class="custom-control-label" for="check<?= $i ?>-4"><?= $label ?></label>
+                                        </div>
+                                    </div>
+                                <?php $i++; endforeach; ?>
+                            </div>
+                        </div>
+
                     </div>
-                    <div class="search-amenities">
-                        <label><input type="checkbox" name="amenities[]" value="ac"> Conditioning</label>
-                        <label><input type="checkbox" name="amenities[]" value="laundry"> Laundry</label>
-                        <label><input type="checkbox" name="amenities[]" value="washer"> Washer</label>
-                        <label><input type="checkbox" name="amenities[]" value="refrigerator"> Refrigerator</label>
-                    </div>
-                </form>
-            </div>
+                </div>
+            </form>
+
         </div>
     </div>
 </section>
@@ -175,7 +212,7 @@ include __DIR__ . '/includes/header.php';
 </section>
 
 <!-- ========== ABOUT THIS PROPERTY ========== -->
-<section class="about-property section-gray">
+<section class="about-property section-white">
     <div class="container">
         <h2>About This Property</h2>
         <div class="row g-3">
@@ -332,10 +369,10 @@ function renderPropertySection($title, $properties, $siteUrl, $uploadUrl, $showS
 </section>
 
 <!-- ========== SERVICES ========== -->
-<section class="services-section">
+<section class="services-section bg-patten-04">
     <div class="container">
         <div class="top-text">
-            <h2>We have the most listings and constant updates.<br>So you'll never miss out.</h2>
+            <h2>We have the most listings and constant updates.So you'll never miss out.</h2>
         </div>
         <div class="row g-4">
             <?php
@@ -348,9 +385,15 @@ function renderPropertySection($title, $properties, $siteUrl, $uploadUrl, $showS
             ?>
             <div class="col-md-4">
                 <div class="service-card">
+                    <div class="row">
+                        <div class="col-md-3">
                     <div class="icon"><i class="<?= $svc['icon'] ?>"></i></div>
+                </div>
+                <div class="col-md-9">
                     <h5><?= $svc['title'] ?></h5>
                     <p><?= $svc['desc'] ?></p>
+                </div>
+                </div>
                 </div>
             </div>
             <?php endforeach; ?>
@@ -384,7 +427,7 @@ function renderPropertySection($title, $properties, $siteUrl, $uploadUrl, $showS
                     ?>
                     <div class="col-md-6">
                         <div class="blog-card">
-                            <div class="blog-thumb">
+                            <div class="blog-thumb hover-shine">
                                 <img src="<?= htmlspecialchars($blogImg) ?>" alt="<?= htmlspecialchars($blog['title']) ?>">
                                 <span class="blog-category"><?= htmlspecialchars($blog['category'] ?? 'RENTAL') ?></span>
                             </div>
@@ -413,7 +456,7 @@ function renderPropertySection($title, $properties, $siteUrl, $uploadUrl, $showS
                     ?>
                     <div class="col-md-6">
                         <div class="blog-card">
-                            <div class="blog-thumb">
+                            <div class="blog-thumb hover-shine">
                                 <img src="<?= $pb['img'] ?>" alt="Blog">
                                 <span class="blog-category">RENTAL</span>
                             </div>
@@ -424,7 +467,7 @@ function renderPropertySection($title, $properties, $siteUrl, $uploadUrl, $showS
                                 </div>
                                 <h5><?= $pb['title'] ?></h5>
                                 <p>Lorem ipsum dolor sit amet, consecte tur cing elit. Suspe ndisse suscipit sagittis leo sit met condim entum, consecte tur cineoi</p>
-                                <a href="#" class="read-more">Read more <i class="fas fa-arrow-right"></i></a>
+                                <a href="#" class="read-more btn-accent">Read more <i class="fas fa-arrow-right"></i></a>
                             </div>
                         </div>
                     </div>
@@ -479,26 +522,24 @@ function renderPropertySection($title, $properties, $siteUrl, $uploadUrl, $showS
 <?php endif; ?>
 
 <!-- ========== CTA CONTACT ========== -->
-<section class="cta-section">
-    <div class="container">
-        <div class="row align-items-center">
-            <div class="col-lg-7">
-                <div class="cta-text">
-                    <h3>For more information about our services, <a href="#">get in touch</a> with our expert consultants</h3>
-                    <p>10 new offers every day. 350 offers on site, Trusted by a community of thousands of users.</p>
-                </div>
+<section class="bg-single-image-02 bg-accent py-lg-13 py-11" data-animated-id="13">
+        <div class="container">
+          <div class="row">
+            <div class="col-ld-6 col-sm-7 fadeInLeft animated" data-animate="fadeInLeft">
+              <div class="pl-6 border-4x border-left border-primary">
+                <h2 class="text-heading lh-15 fs-md-32 fs-25">For more information about our services,<span class="text-primary"> get in touch</span> with our expert consultants</h2>
+                <p class="lh-2 fs-md-15 mb-0">10 new offers every day. 350 offers on site, Trusted by a community of thousands of users.</p>
+              </div>
             </div>
-            <div class="col-lg-5">
-                <div class="cta-phone">
-                    <div class="phone-icon"><i class="fas fa-phone-alt"></i></div>
-                    <div class="phone-label">CALL FOR HELP NOW!</div>
-                    <div class="phone-number">1900 68668</div>
-                    <a href="#" class="btn-contact">Contact us</a>
-                </div>
+            <div class="col-ld-6 col-sm-5 text-center mt-sm-0 mt-8 fadeInRight animated" data-animate="fadeInRight">
+              <i class="fa fa-phone fs-40 text-primary"></i>
+              <p class="fs-13 font-weight-500 letter-spacing-173 text-uppercase lh-2 mt-3">Call for help now!</p>
+              <p class="fs-md-42 fs-32 font-weight-600 text-secondary lh-1">9876543210</p>
+              <a href="#" class="btn btn-lg btn-primary mt-2 px-10">Contact us</a>
             </div>
+          </div>
         </div>
-    </div>
-</section>
+      </section>
 
 <!-- ========== PARTNER LOGOS ========== -->
 <section class="partners-section">

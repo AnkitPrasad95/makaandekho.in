@@ -22,16 +22,19 @@
     <!-- Swiper CSS -->
     <link href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" rel="stylesheet">
     <!-- Custom CSS -->
+    <link href="<?= SITE_URL ?>assets/fonts/fontawesome-pro-5/css/all.css" rel="stylesheet">
+    <link href="<?= SITE_URL ?>assets/css/animate.css" rel="stylesheet">
     <link href="<?= SITE_URL ?>assets/css/style.css" rel="stylesheet">
+    <link href="<?= SITE_URL ?>assets/css/style2.css" rel="stylesheet">
     <script>var SITE_URL = '<?= SITE_URL ?>';</script>
 </head>
 <?php if (session_status() === PHP_SESSION_NONE) session_start(); ?>
 <body>
-
+<header class="main-header">
 <!-- ========== NAVBAR ========== -->
 <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top">
     <div class="container">
-        <a class="navbar-brand" href="<?= SITE_URL ?>">
+        <a class="navbar-brand mr-10 px-0 w-100 w-xl-auto" href="<?= SITE_URL ?>">
             <?php if (!empty($settings['site_logo'])): ?>
                 <img src="<?= UPLOAD_URL . 'settings/' . $settings['site_logo'] ?>" alt="MakaanDekho" class="nav-logo">
             <?php else: ?>
@@ -62,7 +65,7 @@
                 ['label' => 'Builders & Agents', 'slug' => 'builders_agents','href' => '#'],
             ];
             ?>
-            <ul class="navbar-nav ms-auto me-auto">
+            <ul class="navbar-nav main-menu ms-auto me-auto">
                 <?php foreach ($navItems as $nav): ?>
                 <?php if ($nav['slug'] === null): ?>
                 <!-- Simple link (Home) -->
@@ -110,7 +113,7 @@
                 <?php endforeach; ?>
             </ul>
             <div class="nav-right d-flex align-items-center gap-3">
-                <a href="#" class="btn btn-add-listing" data-bs-toggle="modal" data-bs-target="#postPropertyModal">
+                <a href="#" class="btn btn-add-listing btn btn-outline-primary bg-primary btn-lg text-white rounded-lg bg-hover-primary border-hover-primary hover-white d-none d-lg-block" data-bs-toggle="modal" data-bs-target="#postPropertyModal">
                     <i class="fas fa-home me-1"></i> Add listing
                 </a>
                 <?php if (!empty($_SESSION['user_id'])): ?>
@@ -142,6 +145,7 @@
         </div>
     </div>
 </nav>
+</header>
 
 <!-- ========== POST PROPERTY MODAL ========== -->
 <div class="modal fade" id="postPropertyModal" tabindex="-1" aria-hidden="true">
