@@ -621,57 +621,59 @@ require_once __DIR__ . '/includes/header.php';
 </div>
 </form>
 
-<script>
-$('#featInput').on('change',function(){
-  var f=this.files[0];if(!f)return;
-  var r=new FileReader();r.onload=function(e){$('#featPreview').attr('src',e.target.result).show();$('#featIcon,#featText').hide();}
-  r.readAsDataURL(f);
-});
-$('#galleryInput').on('change',function(){
-  $('#galleryPreview').empty();
-  $.each(this.files,function(i,f){var r=new FileReader();r.onload=function(e){$('#galleryPreview').append('<img src="'+e.target.result+'" style="width:66px;height:66px;object-fit:cover;border-radius:6px;margin:3px;">');}r.readAsDataURL(f);});
-});
-$('.amenity-lbl').on('click',function(){
-  var cb=$(this).find('input');var chk=!cb.prop('checked');cb.prop('checked',chk);
-  $(this).css({'border-color':chk?'#1e40af':'#e5e7eb','background':chk?'#eff6ff':'#fff'});
-});
-
-// Delete image toggle
-$('input[name="delete_images[]"]').closest('label').on('click',function(){
-  var cb=$(this).find('input');
-  var chk=!cb.prop('checked');
-  cb.prop('checked',chk);
-  $(this).closest('.position-relative').find('img').first().css('opacity',chk?'0.3':'1');
-});
-
-// Google Map link generator
-$('#generateMapLink').on('click', function(){
-  var parts = [];
-  var address = $('input[name="address"]').val().trim();
-  var locText = $('select[name="location_id"] option:selected').text().trim();
-  var pincode = $('input[name="pincode"]').val().trim();
-  var country = $('input[name="country"]').val().trim();
-
-  if (address) parts.push(address);
-  if (locText && locText !== '– Select –') parts.push(locText);
-  if (pincode) parts.push(pincode);
-  if (country) parts.push(country);
-
-  if (parts.length === 0) {
-    alert('Please fill at least one address field first.');
-    return;
-  }
-  var query = parts.join(', ');
-  var url = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(query);
-  $('#googleMapUrl').val(url);
-  $('#testMapLink').attr('href', url);
-});
-
-$('#googleMapUrl').on('input', function(){
-  var val = $(this).val().trim();
-  $('#testMapLink').attr('href', val || '#');
-});
-$('#testMapLink').attr('href', $('#googleMapUrl').val() || '#');
-</script>
-
 <?php require_once 'includes/footer.php'; ?>
+
+<script>
+$(document).ready(function() {
+  $('#featInput').on('change',function(){
+    var f=this.files[0];if(!f)return;
+    var r=new FileReader();r.onload=function(e){$('#featPreview').attr('src',e.target.result).show();$('#featIcon,#featText').hide();}
+    r.readAsDataURL(f);
+  });
+  $('#galleryInput').on('change',function(){
+    $('#galleryPreview').empty();
+    $.each(this.files,function(i,f){var r=new FileReader();r.onload=function(e){$('#galleryPreview').append('<img src="'+e.target.result+'" style="width:66px;height:66px;object-fit:cover;border-radius:6px;margin:3px;">');}r.readAsDataURL(f);});
+  });
+  $('.amenity-lbl').on('click',function(){
+    var cb=$(this).find('input');var chk=!cb.prop('checked');cb.prop('checked',chk);
+    $(this).css({'border-color':chk?'#1e40af':'#e5e7eb','background':chk?'#eff6ff':'#fff'});
+  });
+
+  // Delete image toggle
+  $('input[name="delete_images[]"]').closest('label').on('click',function(){
+    var cb=$(this).find('input');
+    var chk=!cb.prop('checked');
+    cb.prop('checked',chk);
+    $(this).closest('.position-relative').find('img').first().css('opacity',chk?'0.3':'1');
+  });
+
+  // Google Map link generator
+  $('#generateMapLink').on('click', function(){
+    var parts = [];
+    var address = $('input[name="address"]').val().trim();
+    var locText = $('select[name="location_id"] option:selected').text().trim();
+    var pincode = $('input[name="pincode"]').val().trim();
+    var country = $('input[name="country"]').val().trim();
+
+    if (address) parts.push(address);
+    if (locText && locText !== '– Select –') parts.push(locText);
+    if (pincode) parts.push(pincode);
+    if (country) parts.push(country);
+
+    if (parts.length === 0) {
+      alert('Please fill at least one address field first.');
+      return;
+    }
+    var query = parts.join(', ');
+    var url = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(query);
+    $('#googleMapUrl').val(url);
+    $('#testMapLink').attr('href', url);
+  });
+
+  $('#googleMapUrl').on('input', function(){
+    var val = $(this).val().trim();
+    $('#testMapLink').attr('href', val || '#');
+  });
+  $('#testMapLink').attr('href', $('#googleMapUrl').val() || '#');
+});
+</script>

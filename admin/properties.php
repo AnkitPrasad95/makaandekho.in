@@ -165,12 +165,14 @@ $counts = $pdo->query("
   </div>
 </div>
 
+<?php require_once 'includes/footer.php'; ?>
+
 <script>
-$('#rejectModal').on('show.bs.modal', function (e) {
-  var btn = $(e.relatedTarget);
-  $('#rejectId').val(btn.data('id'));
-  $('#rejectTitle').text(btn.data('title'));
+$(document).ready(function() {
+  $('#rejectModal').on('show.bs.modal', function (e) {
+    var btn = $(e.relatedTarget);
+    $('#rejectId').val(btn.data('id'));
+    $('#rejectTitle').text(btn.data('title'));
+  });
 });
 </script>
-
-<?php require_once 'includes/footer.php'; ?>

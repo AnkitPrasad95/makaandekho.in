@@ -95,11 +95,11 @@ $footerPropertyTypes = [
                 <h5 class="footer-heading">Sign Up for Our Newsletter</h5>
                 <p class="footer-text">Get the latest property updates, market trends and real estate news directly in your inbox.</p>
                 <form class="newsletter-form" id="newsletterForm">
-                    <div class="input-group">
+                    <div class="input-group" id="nlFormFields">
                         <input type="email" name="email" class="form-control" placeholder="Your email" required>
                         <button class="btn btn-primary" type="submit" id="nlBtn">Subscribe</button>
                     </div>
-                    <div id="nlMsg" style="display:none;margin-top:8px;font-size:12px;padding:6px 10px;border-radius:6px;"></div>
+                    <div id="nlMsg" style="display:none;margin-top:10px;font-size:13px;padding:10px 14px;border-radius:8px;line-height:1.5;"></div>
                 </form>
 
                 <!-- Social Icons -->
@@ -327,6 +327,8 @@ document.addEventListener('DOMContentLoaded', function() {
             var fd = new FormData();
             fd.append('email', email);
 
+            var fields = document.getElementById('nlFormFields');
+
             fetch(SITE_URL + 'ajax-newsletter.php', { method: 'POST', body: fd })
                 .then(function(r) { return r.json(); })
                 .then(function(data) {
@@ -334,14 +336,22 @@ document.addEventListener('DOMContentLoaded', function() {
                     btn.textContent = 'Subscribe';
                     msg.style.display = 'block';
                     if (data.success) {
-                        msg.style.background = '#ecfdf5';
-                        msg.style.color = '#059669';
-                        emailInput.value = '';
+                        fields.style.display = 'none';
+                        msg.style.background = 'rgba(16,185,129,.15)';
+                        msg.style.color = '#10b981';
+                        msg.style.border = '1px solid rgba(16,185,129,.3)';
+                        msg.innerHTML = '<i class="fas fa-check-circle" style="margin-right:6px;"></i>' + data.message;
+                        setTimeout(function() {
+                            fields.style.display = '';
+                            msg.style.display = 'none';
+                            emailInput.value = '';
+                        }, 4000);
                     } else {
-                        msg.style.background = '#fef2f2';
-                        msg.style.color = '#dc2626';
+                        msg.style.background = 'rgba(239,68,68,.1)';
+                        msg.style.color = '#ef4444';
+                        msg.style.border = '1px solid rgba(239,68,68,.2)';
+                        msg.innerHTML = '<i class="fas fa-info-circle" style="margin-right:6px;"></i>' + data.message;
                     }
-                    msg.textContent = data.message;
                 })
                 .catch(function() {
                     btn.disabled = false;

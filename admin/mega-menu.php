@@ -292,18 +292,20 @@ require_once 'includes/header.php';
   </div>
 </div>
 
+<?php require_once 'includes/footer.php'; ?>
+
 <script>
-// Populate edit modal
-$(document).on('click', '.edit-btn', function () {
-    $('#editId').val($(this).data('id'));
-    $('#editMenuSlug').val($(this).data('menu-slug'));
-    $('#editColumnHeading').val($(this).data('column-heading'));
-    $('#editItemTitle').val($(this).data('item-title'));
-    $('#editItemUrl').val($(this).data('item-url'));
-    $('#editColumnOrder').val($(this).data('column-order'));
-    $('#editItemOrder').val($(this).data('item-order'));
-    $('#editIsActive').prop('checked', $(this).data('is-active') == 1);
+$(document).ready(function() {
+  // Populate edit modal
+  $(document).on('click', '.edit-btn', function () {
+      $('#editId').val($(this).data('id'));
+      $('#editMenuSlug').val($(this).data('menu-slug'));
+      $('#editColumnHeading').val($(this).data('column-heading'));
+      $('#editItemTitle').val($(this).data('item-title'));
+      $('#editItemUrl').val($(this).data('item-url'));
+      $('#editColumnOrder').val($(this).data('column-order'));
+      $('#editItemOrder').val($(this).data('item-order'));
+      $('#editIsActive').prop('checked', $(this).data('is-active') == 1);
+  });
 });
 </script>
-
-<?php require_once 'includes/footer.php'; ?>

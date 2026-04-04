@@ -286,6 +286,14 @@ body.sb-collapsed #page-content { margin-left: 0; }
         </a>
       </li>
 
+      <?php $nlCount = (int)$pdo->query("SELECT COUNT(*) FROM newsletter_subscribers WHERE is_active=1")->fetchColumn(); ?>
+      <li class="nav-item <?= $current === 'newsletter.php' ? 'active' : '' ?>">
+        <a href="<?= BASE_URL ?>newsletter.php">
+          <i class="fas fa-newspaper nav-icon"></i> Newsletter
+          <?php if ($nlCount): ?><span class="badge badge-info ml-auto" style="font-size:10px;"><?= $nlCount ?></span><?php endif; ?>
+        </a>
+      </li>
+
       <li class="nav-section">System</li>
 
       <li class="nav-item <?= $current === 'settings.php' ? 'active' : '' ?>">

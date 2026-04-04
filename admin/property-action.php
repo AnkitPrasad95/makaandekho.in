@@ -37,7 +37,7 @@ switch ($action) {
     case 'approve':
         $stmt = $pdo->prepare("UPDATE properties SET status='approved', rejection_reason=NULL WHERE id=?");
         $stmt->execute([$id]);
-        flash('success', "Property "{$prop['title']}" has been approved.");
+        flash('success', 'Property "' . $prop['title'] . '" has been approved.');
         break;
 
     case 'reject':
@@ -49,7 +49,7 @@ switch ($action) {
         }
         $stmt = $pdo->prepare("UPDATE properties SET status='rejected', rejection_reason=? WHERE id=?");
         $stmt->execute([$reason, $id]);
-        flash('success', "Property "{$prop['title']}" has been rejected.");
+        flash('success', 'Property "' . $prop['title'] . '" has been rejected.');
         break;
 
     case 'toggle_featured':

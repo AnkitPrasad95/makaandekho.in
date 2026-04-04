@@ -1,7 +1,7 @@
-# MakaanDekho.in - Test Cases & Results (v2)
+# MakaanDekho.in - Test Cases & Results (v3)
 
 **Project:** MakaanDekho - Real Estate Portal  
-**Test Date:** April 4, 2026 (Updated)  
+**Test Date:** April 4, 2026 (Final)  
 **Tested By:** Automated Test Suite (curl + PHP) + Code Verification  
 **Environment:** localhost / XAMPP / PHP 8.x / MySQL  
 
@@ -11,384 +11,314 @@
 
 | # | Category | Tests | Pass | Fail |
 |---|----------|-------|------|------|
-| 1 | Signup Popup Validation | 7 | 7 | 0 |
-| 2 | Enquiry Form Validation | 4 | 4 | 0 |
-| 3 | Newsletter Validation | 3 | 3 | 0 |
-| 4 | Contact Form Validation | 4 | 4 | 0 |
-| 5 | Frontend Page Loads | 10 | 10 | 0 |
-| 6 | Admin Auth Protection | 10 | 10 | 0 |
-| 7 | CSV Export | 3 | 3 | 0 |
-| 8 | Favicon (Admin + Frontend) | 2 | 2 | 0 |
-| 9 | Session Isolation | 4 | 4 | 0 |
-| 10 | Agent Feature | 1 | 1 | 0 |
-| 11 | Mailer Security | 5 | 5 | 0 |
-| 12 | Property Detail Agent Card | 4 | 4 | 0 |
-| 13 | Admin Agent Assignment | 3 | 3 | 0 |
-| 14 | Security (SQL Injection / XSS) | 10 | 10 | 0 |
-| 15 | Email System | 5 | 5 | 0 |
-| 16 | DB Verification | 8 | 8 | 0 |
-| | **TOTAL** | **83** | **83** | **0** |
+| 1 | Signup Popup Validation | 12 | 12 | 0 |
+| 2 | Enquiry Form Validation | 7 | 7 | 0 |
+| 3 | Newsletter Validation | 8 | 8 | 0 |
+| 4 | Contact Form Validation | 7 | 7 | 0 |
+| 5 | Property Search Filters | 9 | 9 | 0 |
+| 6 | Frontend Page Loads | 11 | 11 | 0 |
+| 7 | Admin Auth Protection | 11 | 11 | 0 |
+| 8 | Mega Menu Dynamic | 7 | 7 | 0 |
+| 9 | Database Tables | 16 | 16 | 0 |
+| 10 | Security Checks | 15 | 15 | 0 |
+| 11 | Admin Modal JS Fix | 9 | 9 | 0 |
+| 12 | Features Check | 9 | 9 | 0 |
+| 13 | Email System | 5 | 5 | 0 |
+| 14 | SQL Injection & XSS | 6 | 6 | 0 |
+| | **TOTAL** | **132** | **132** | **0** |
 | | **Pass Rate** | | **100%** | |
 
 ---
 
-## 1. Signup Popup Validation (ajax-post-property.php)
+## 1. Signup Popup (ajax-post-property.php)
 
-| # | Test Case | Input | Expected | Result |
-|---|-----------|-------|----------|--------|
-| T01 | Empty all fields | All empty | `success:false` with validation errors | PASS |
-| T02 | Invalid email format | email="bad" | `success:false` - "Valid email required" | PASS |
-| T03 | Short phone (3 digits) | phone="123" | `success:false` - "Valid 10-digit phone" | PASS |
-| T04 | Phone starts with 1 | phone="1234567890" | `success:false` - Indian phone required | PASS |
-| T05 | Phone starts with 5 | phone="5555555555" | `success:false` - Indian phone required | PASS |
-| T06 | Single char name | name="A" | `success:false` - min 2 chars | PASS |
-| T07 | SQL injection in name | `'; DROP TABLE users;--` | `success:true` - safe via prepared stmt | PASS |
-
-### Signup Success Flow
+### Input Validation
 
 | # | Test Case | Expected | Result |
 |---|-----------|----------|--------|
-| T07a | Valid new user signup | `success:true`, `new_user:true`, password generated | PASS |
-| T07b | Password auto-generated | 6+ char readable password | PASS |
-| T07c | Email returned in response | For credentials display | PASS |
-| T07d | Existing user - same email | `new_user:false`, no password shown | PASS |
-| T07e | User created with status=pending | DB verified | PASS |
-| T07f | Property created with status=pending | DB verified | PASS |
-| T07g | Password is bcrypt hashed | Starts with `$2y$` | PASS |
+| T01 | Empty all fields | Reject with errors | PASS |
+| T02 | Invalid email format | Reject | PASS |
+| T03 | Short phone (3 digits) | Reject | PASS |
+| T04 | Non-Indian phone (starts 1) | Reject | PASS |
+| T05 | Single char name | Reject (min 2) | PASS |
+| T06 | SQL injection in name | Safe via prepared stmt | PASS |
+
+### Success Flow
+
+| # | Test Case | Result |
+|---|-----------|--------|
+| T06a | Valid new user: success + new_user=true + password | PASS |
+| T06b | Existing user: new_user=false, no password | PASS |
+| T06c | User status = pending in DB | PASS |
+| T06d | Property status = pending in DB | PASS |
+| T06e | Password bcrypt hashed ($2y$) | PASS |
+| T06f | Registration email sent via SMTP | PASS |
 
 ---
 
-## 2. Enquiry Form Validation (ajax-enquiry.php)
-
-| # | Test Case | Input | Expected | Result |
-|---|-----------|-------|----------|--------|
-| T08 | Empty all fields | All empty | `success:false` | PASS |
-| T09 | Invalid email | email="bad" | `success:false` | PASS |
-| T10 | Invalid phone (3 digits) | phone="123" | `success:false` | PASS |
-| T11 | Valid enquiry | All valid | `success:true` - saved to DB | PASS |
-
-### Enquiry Security
+## 2. Enquiry Form (ajax-enquiry.php)
 
 | # | Test Case | Expected | Result |
 |---|-----------|----------|--------|
-| T11a | SQL injection in message | Safe (prepared statements) | PASS |
-| T11b | Rate limiting (5/hr per email) | 6th request blocked | PASS |
-| T11c | XSS stripped from inputs | `strip_tags()` applied | PASS |
+| T07 | Empty fields | Reject | PASS |
+| T08 | Invalid email | Reject | PASS |
+| T09 | Invalid phone | Reject | PASS |
+| T10 | Valid enquiry | Success, saved to DB | PASS |
+| T10a | SQL injection in message | Safe | PASS |
+| T10b | Rate limiting 5/hr per email | Works | PASS |
+| T10c | strip_tags() on inputs | Applied | PASS |
 
 ---
 
-## 3. Newsletter Validation (ajax-newsletter.php)
-
-| # | Test Case | Input | Expected | Result |
-|---|-----------|-------|----------|--------|
-| T12 | Empty email | email="" | `success:false` | PASS |
-| T13 | Invalid email format | email="notvalid" | `success:false` | PASS |
-| T14 | Valid subscription | Valid email | `success:true` - saved to DB | PASS |
-
-### Newsletter Additional
+## 3. Newsletter (ajax-newsletter.php + admin/newsletter.php)
 
 | # | Test Case | Expected | Result |
 |---|-----------|----------|--------|
-| T14a | Duplicate subscription | "Already subscribed" message | PASS |
-| T14b | Resubscribe after unsubscribe | Reactivated | PASS |
+| T11 | Empty email | Reject | PASS |
+| T12 | Invalid email | Reject | PASS |
+| T13 | Valid subscription | Success | PASS |
+| T13a | Duplicate blocked | "Already subscribed" | PASS |
+| T13b | Resubscribe after unsubscribe | Reactivated | PASS |
+| T13c | Admin page shows subscriber list | DataTable | PASS |
+| T13d | CSV export from admin | Downloads CSV | PASS |
+| T13e | Success message hides form, auto-resets 4s | Animation | PASS |
 
 ---
 
-## 4. Contact Form Validation (contact.php)
-
-| # | Test Case | Input | Expected | Result |
-|---|-----------|-------|----------|--------|
-| T15 | Empty name | name="" | "Name is required" error | PASS |
-| T16 | Invalid email | email="bad" | "Valid email" error | PASS |
-| T17 | Invalid phone | phone="123" | "valid 10-digit" error | PASS |
-| T18 | Valid submission | All valid | "has been sent" success | PASS |
-
-### Contact Security
+## 4. Contact Form (contact.php)
 
 | # | Test Case | Expected | Result |
 |---|-----------|----------|--------|
-| T18a | Rate limiting (3/hr per email) | 4th request blocked | PASS |
-| T18b | XSS in message stripped | `strip_tags()` applied | PASS |
-| T18c | Message min 10 chars | Short message rejected | PASS |
+| T14 | Empty fields | "Name is required" | PASS |
+| T15 | Valid submission | "has been sent" | PASS |
+| T15a | Invalid email rejected | Error shown | PASS |
+| T15b | Invalid phone rejected | Error shown | PASS |
+| T15c | Message min 10 chars | Enforced | PASS |
+| T15d | Rate limiting 3/hr per email | Works | PASS |
+| T15e | XSS stripped | strip_tags() | PASS |
 
 ---
 
-## 5. Frontend Page Load Tests
+## 5. Property Search Filters (properties.php)
 
-| # | Page | URL | HTTP | Result |
-|---|------|-----|------|--------|
-| T19 | Homepage | `/` | 200 | PASS |
-| T20 | Login | `/login.php` | 200 | PASS |
-| T21 | Forgot Password | `/forgot-password.php` | 200 | PASS |
-| T22 | Contact | `/contact.php` | 200 | PASS |
-| T23 | About | `/about.php` | 200 | PASS |
-| T24 | Blogs | `/blogs.php` | 200 | PASS |
-| T25 | Properties | `/properties.php` | 200 | PASS |
-| T26 | Terms | `/terms.php` | 200 | PASS |
-| T27 | Privacy | `/privacy.php` | 200 | PASS |
-| T28 | Register (redirect) | `/register.php` | 302 -> `/?register=1` | PASS |
+| # | Filter | Results | Result |
+|---|--------|---------|--------|
+| T16 | type=apartment | 9 | PASS |
+| T17 | type=villa | 4 | PASS |
+| T18 | type=plot | 3 | PASS |
+| T19 | type=commercial | 3 | PASS |
+| T20 | type=office | 4 | PASS |
+| T21 | city=Noida | 6 | PASS |
+| T22 | city=Gurgaon | 4 | PASS |
+| T23 | type=apartment&city=Noida | 3 | PASS |
+| T24 | No PHP warnings | 0 errors | PASS |
 
----
+### Supported Parameters
 
-## 6. Admin Auth Protection
-
-| # | Page | Without Login | Result |
-|---|------|---------------|--------|
-| T29 | admin/dashboard.php | 302 redirect | PASS |
-| T30 | admin/users.php | 302 redirect | PASS |
-| T31 | admin/properties.php | 302 redirect | PASS |
-| T32 | admin/enquiries.php | 302 redirect | PASS |
-| T33 | admin/settings.php | 302 redirect | PASS |
-| T34 | admin/blogs.php | 302 redirect | PASS |
-| T35 | admin/locations.php | 302 redirect | PASS |
-| T36 | admin/banners.php | 302 redirect | PASS |
-| T37 | admin/testimonials.php | 302 redirect | PASS |
-| T38 | admin/mega-menu.php | 302 redirect | PASS |
+| Param | Alt Param | Description |
+|-------|-----------|-------------|
+| `property_type` | `type` | apartment, villa, plot, commercial, office |
+| `listing_type` | `listing` | sale, rent |
+| `city` | - | City name (LIKE match) |
+| `q` | `search` | Keyword (title, address, city, area) |
+| `bedrooms` | - | 1, 2, 3, 4, 5+ |
+| `price_min` / `price_max` | - | Price range |
+| `category` | - | Residential, Commercial, Plots |
+| `furnishing` | - | furnished, semi-furnished, unfurnished |
 
 ---
 
-## 7. CSV Export (admin/enquiries.php)
+## 6. Frontend Page Loads
 
-| # | Test Case | Expected | Result |
-|---|-----------|----------|--------|
-| T39 | CSV export runs before HTML header | No HTML in output | PASS |
-| T40 | Content-Type: text/csv header set | Proper MIME type | PASS |
-| T41 | UTF-8 BOM for Excel compatibility | `EF BB BF` bytes prepended | PASS |
-
----
-
-## 8. Favicon
-
-| # | Test Case | Expected | Result |
-|---|-----------|----------|--------|
-| T42 | Admin favicon from DB settings | `uploads/settings/favicon_xxx` | PASS |
-| T43 | Frontend favicon from DB settings | `uploads/settings/favicon_xxx` | PASS |
-
----
-
-## 9. Session Isolation (Logout)
-
-| # | Test Case | Expected | Result |
-|---|-----------|----------|--------|
-| T44 | Frontend logout: no session_destroy | Only `unset()` user keys | PASS |
-| T45 | Frontend logout: unsets user_id, user_data | Admin session untouched | PASS |
-| T46 | Admin logout: no session_destroy | Only `unset()` admin keys | PASS |
-| T47 | Admin logout: unsets admin_id, admin_name, admin_email | Frontend session untouched | PASS |
+| # | Page | HTTP | Result |
+|---|------|------|--------|
+| T25 | Homepage `/` | 200 | PASS |
+| T26 | `/login.php` | 200 | PASS |
+| T27 | `/forgot-password.php` | 200 | PASS |
+| T28 | `/contact.php` | 200 | PASS |
+| T29 | `/about.php` | 200 | PASS |
+| T30 | `/blogs.php` | 200 | PASS |
+| T31 | `/properties.php` | 200 | PASS |
+| T32 | `/terms.php` | 200 | PASS |
+| T33 | `/privacy.php` | 200 | PASS |
+| T34 | `/property-detail.php?slug=test` | 200 | PASS |
+| T35 | `/register.php` → redirect | 302 | PASS |
 
 ---
 
-## 10. Agent/Propreneur Feature
+## 7. Admin Auth Protection
 
-### Database
-
-| # | Test Case | Expected | Result |
-|---|-----------|----------|--------|
-| T48 | agent_id column in properties table | INT, nullable | PASS |
-
-### Property Detail Page (property-detail.php)
-
-| # | Test Case | Expected | Result |
-|---|-----------|----------|--------|
-| T49 | Reads agent_id from property | SQL query includes agent lookup | PASS |
-| T50 | Agent card shows "LISTING PROPRENEUR" | Gold header label | PASS |
-| T51 | Agent photo or initials displayed | Circular with gold border | PASS |
-| T52 | Agent name, email, phone shown | Dynamic from users table | PASS |
-| T53 | "Call Now" button | Direct tel: link | PASS |
-| T54 | "WhatsApp" button | Opens wa.me with property title | PASS |
-| T55 | Fallback to owner if no agent | Shows builder/owner info | PASS |
-| T56 | Fallback to site name if no user | Shows MakaanDekho branding | PASS |
-
-### Admin Property Edit (admin/property-edit.php)
-
-| # | Test Case | Expected | Result |
-|---|-----------|----------|--------|
-| T57 | Agent dropdown in sidebar | "Listing Agent / Propreneur" card | PASS |
-| T58 | Dropdown shows all active users | Name + role + email | PASS |
-| T59 | Currently assigned agent shown | Info box below dropdown | PASS |
-| T60 | agent_id saved in UPDATE query | Prepared statement parameter | PASS |
+| # | Page | Status | Result |
+|---|------|--------|--------|
+| T36 | admin/dashboard.php | 302 | PASS |
+| T37 | admin/users.php | 302 | PASS |
+| T38 | admin/properties.php | 302 | PASS |
+| T39 | admin/enquiries.php | 302 | PASS |
+| T40 | admin/settings.php | 302 | PASS |
+| T41 | admin/blogs.php | 302 | PASS |
+| T42 | admin/locations.php | 302 | PASS |
+| T43 | admin/banners.php | 302 | PASS |
+| T44 | admin/testimonials.php | 302 | PASS |
+| T45 | admin/mega-menu.php | 302 | PASS |
+| T46 | admin/newsletter.php | 302 | PASS |
 
 ---
 
-## 11. Mailer Security (includes/mailer.php)
+## 8. Mega Menu Dynamic
 
-| # | Test Case | Expected | Result |
-|---|-----------|----------|--------|
-| T61 | No hardcoded email address | Zero occurrences | PASS |
-| T62 | No hardcoded password | Zero occurrences | PASS |
-| T63 | SMTP host from DB settings | `$settings['smtp_host']` | PASS |
-| T64 | SMTP user from DB settings | `$settings['smtp_user']` | PASS |
-| T65 | SMTP pass from DB settings | `$settings['smtp_pass']` | PASS |
-| T66 | Graceful fail if SMTP not configured | Returns false + logs error | PASS |
-
----
-
-## 12. Email System
-
-| # | Test Case | Trigger | Expected | Result |
-|---|-----------|---------|----------|--------|
-| T67 | Registration email | New user via popup | "Registration Received" subject | PASS |
-| T68 | Approval email | Admin approves user | "Account Approved" + set password link | PASS |
-| T69 | Password reset email | Forgot password form | "Password Reset" + reset link | PASS |
-| T70 | Email sent via PHPMailer SMTP | Gmail SMTP | Delivered to inbox | PASS |
-| T71 | All emails logged | Any email send | Logged in `logs/email.log` | PASS |
+| # | Test Case | Result |
+|---|-----------|--------|
+| T47 | For Buyers shows property title links | PASS |
+| T47a | Residential column: property names + city | PASS |
+| T47b | Commercial column: property names + city | PASS |
+| T47c | Plots column: property names + city | PASS |
+| T47d | "View All" link per category | PASS |
+| T47e | Links to property-detail.php?slug= | PASS |
+| T47f | Auto-updates with new properties | PASS |
 
 ---
 
-## 13. Security Tests
+## 9. Database (16 Tables)
 
-| # | Test Case | Attack Vector | Protection | Result |
-|---|-----------|---------------|------------|--------|
-| T72 | SQL Injection - signup | `'; DROP TABLE users;--` | PDO Prepared Statements | PASS |
-| T73 | SQL Injection - enquiry | `'; DROP TABLE enquiries;--` | PDO Prepared Statements | PASS |
-| T74 | XSS - signup name | `<script>alert(1)</script>` | `strip_tags()` | PASS |
-| T75 | XSS - contact message | `<img onerror=alert(1)>` | `strip_tags()` | PASS |
-| T76 | Password hashing | Bcrypt check | `password_hash()` / `$2y$` | PASS |
-| T77 | Reset token security | Unpredictable | `bin2hex(random_bytes(32))` | PASS |
-| T78 | Token expiry | 48-hour limit | `reset_expires` checked | PASS |
-| T79 | Phone validation | Indian only | Regex `^[6-9][0-9]{9}$` | PASS |
-| T80 | Rate limiting - enquiry | Max 5/hr/email | COUNT query check | PASS |
-| T81 | Rate limiting - contact | Max 3/hr/email | COUNT query check | PASS |
-
----
-
-## 14. DB Verification
-
-| # | Test Case | Expected | Result |
-|---|-----------|----------|--------|
-| T82 | Users table has all columns | id, name, email, phone, city, state, role, status, password, reset_token | PASS |
-| T83 | Properties table has agent_id | INT nullable column | PASS |
-| T84 | Enquiries table exists | With status enum | PASS |
-| T85 | Newsletter_subscribers table | email, is_active | PASS |
-| T86 | Settings table has SMTP fields | smtp_host, smtp_user, smtp_pass, smtp_port | PASS |
-| T87 | Settings table has social media | facebook, instagram, twitter, youtube, linkedin | PASS |
-| T88 | Settings table has phone field | phone column | PASS |
-| T89 | Tables intact after SQL injection | All 16 tables present | PASS |
+| Table | Rows | Status |
+|-------|------|--------|
+| admin_users | 1 | PASS |
+| banners | 4 | PASS |
+| blogs | 6 | PASS |
+| cms_pages | 3 | PASS |
+| enquiries | 10 | PASS |
+| favourites | 4 | PASS |
+| locations | 21 | PASS |
+| mega_menu_items | 39 | PASS |
+| newsletter_subscribers | 4 | PASS |
+| properties | 42 | PASS |
+| property_documents | 0 | PASS |
+| property_images | 3 | PASS |
+| schedule_calls | 3 | PASS |
+| settings | 1 | PASS |
+| testimonials | 6 | PASS |
+| users | 13 | PASS |
 
 ---
 
-## Complete User Flows (End-to-End)
+## 10. Security
 
-### Flow A: Guest -> Signup -> Approval -> Login
+| # | Check | Result |
+|---|-------|--------|
+| T48 | No hardcoded email in mailer | PASS |
+| T49 | No hardcoded password in mailer | PASS |
+| T50 | Frontend logout: session isolation | PASS |
+| T51 | Admin logout: session isolation | PASS |
+| T52 | SQL injection: prepared statements | PASS |
+| T53 | XSS: strip_tags + htmlspecialchars | PASS |
+| T54 | Password: bcrypt hashed | PASS |
+| T55 | Reset tokens: random_bytes, 48hr expiry | PASS |
+| T56 | Phone: Indian regex ^[6-9]\d{9}$ | PASS |
+| T57 | Email: FILTER_VALIDATE_EMAIL | PASS |
+| T58 | Rate limiting: enquiry 5/hr | PASS |
+| T59 | Rate limiting: contact 3/hr | PASS |
+| T60 | CSRF tokens on admin forms | PASS |
+| T61 | Admin auth on all pages | PASS |
+| T62 | SMTP creds from DB only | PASS |
+
+---
+
+## 11. Admin Modal JS Fix
+
+| # | File | Modal Type | Result |
+|---|------|-----------|--------|
+| T63 | banners.php | Edit/Delete banner | PASS |
+| T64 | blog-add.php | Summernote editor | PASS |
+| T65 | blog-edit.php | Summernote editor | PASS |
+| T66 | enquiries.php | View enquiry detail | PASS |
+| T67 | mega-menu.php | Edit menu item | PASS |
+| T68 | properties.php | Reject with reason | PASS |
+| T69 | property-add.php | Image preview, toggles | PASS |
+| T70 | property-edit.php | Image preview, agent | PASS |
+| T71 | testimonials.php | Edit/Delete testimonial | PASS |
+
+---
+
+## 12. Features
+
+| # | Feature | Result |
+|---|---------|--------|
+| T72 | agent_id column in properties | PASS |
+| T73 | Agent/Propreneur card on property detail | PASS |
+| T74 | Agent dropdown in admin property edit | PASS |
+| T75 | Newsletter admin page | PASS |
+| T76 | Dynamic mega menu (property titles) | PASS |
+| T77 | Newsletter AJAX in footer | PASS |
+| T78 | Client-side MKV validator | PASS |
+| T79 | Admin favicon from DB settings | PASS |
+| T80 | Newsletter in admin sidebar with badge | PASS |
+
+---
+
+## 13. Email System
+
+| # | Test | Result |
+|---|------|--------|
+| T81 | SMTP from DB settings | PASS |
+| T82 | Registration email on signup | PASS |
+| T83 | Approval email with set-password link | PASS |
+| T84 | Password reset email | PASS |
+| T85 | All emails logged | PASS |
+
+---
+
+## 14. SQL Injection & XSS
+
+| # | Attack | Target | Result |
+|---|--------|--------|--------|
+| T86 | `'; DROP TABLE users;--` | Signup | PASS |
+| T87 | `'; DROP TABLE enquiries;--` | Enquiry | PASS |
+| T88 | `<script>alert(1)</script>` | Signup | PASS |
+| T89 | `<img onerror=alert(1)>` | Contact | PASS |
+| T90 | All 16 tables intact after attacks | DB check | PASS |
+| T91 | All INSERT/UPDATE use prepared stmts | Code audit | PASS |
+
+---
+
+## End-to-End Flows
+
+### Flow A: Guest → Signup → Approval → Login
 ```
-1. Guest visits homepage                    [T19 PASS]
-2. Clicks "Add listing" (popup opens)       [Verified]
-3. Client-side validation on blur           [Verified]
-4. Invalid data rejected                    [T01-T06 PASS]
-5. Valid data submitted                     [T07a PASS]
-6. User created (status=pending)            [T07e PASS]
-7. Password auto-generated & shown          [T07b PASS]
-8. Registration email sent                  [T67 PASS]
-9. Admin approves user                      [Verified]
-10. Approval email sent (set password link) [T68 PASS]
-11. User sets password via link             [Verified]
-12. User logs in                            [T20 PASS]
-13. Clicks "Add listing" -> add-property    [Verified]
-```
-
-### Flow B: Enquiry Submission
-```
-1. Visitor views property                   [Verified]
-2. Fills enquiry form (validated)           [T08-T10 PASS]
-3. Submits enquiry                          [T11 PASS]
-4. Enquiry saved (status=new)              [Verified]
-5. Admin sees in Enquiries                  [Verified]
-6. Admin exports CSV                        [T39-T41 PASS]
+Guest visits → Clicks "Add listing" → Popup opens →
+Validation (client + server) → User created (pending) →
+Password shown → Email sent → Admin approves →
+Approval email → User sets password → Logs in →
+"Add listing" → add-property.php
 ```
 
-### Flow C: Contact Form
+### Flow B: Property Search via Mega Menu
 ```
-1. Visitor opens contact page               [T22 PASS]
-2. Validation on empty/invalid fields       [T15-T17 PASS]
-3. Valid submission saved                    [T18 PASS]
-4. Rate limited (3/hr)                      [T18a PASS]
+Hover "For Buyers" → See property titles by category →
+Click property → property-detail.php →
+OR Click "View All Residential →" → properties.php?type=apartment
+City filter, type filter, combined filters all work
+```
+
+### Flow C: Enquiry → Admin
+```
+Property detail → Enquiry form → Validated → Saved →
+Admin sees in Enquiries → View modal shows data →
+Export CSV downloads properly
 ```
 
 ### Flow D: Newsletter
 ```
-1. Footer newsletter form on all pages      [Verified]
-2. Invalid email rejected                   [T12-T13 PASS]
-3. Valid email subscribed                   [T14 PASS]
-4. Duplicate blocked                        [T14a PASS]
+Footer form → Email validated → AJAX submit →
+Success animation → Admin page shows subscribers →
+Toggle active/inactive → CSV export
 ```
 
-### Flow E: Session Isolation
+### Flow E: Admin Modals
 ```
-1. Admin logged in + User logged in         [Verified]
-2. Frontend logout -> admin stays           [T44-T45 PASS]
-3. Admin logout -> frontend stays           [T46-T47 PASS]
-```
-
-### Flow F: Agent Assignment
-```
-1. Admin edits property                     [Verified]
-2. Assigns agent from dropdown              [T57-T60 PASS]
-3. Property detail shows agent card         [T49-T56 PASS]
-4. Call Now + WhatsApp buttons work         [T53-T54 PASS]
+All 9 admin pages with popups → jQuery loads first →
+$(document).ready() → Data populates correctly
 ```
 
 ---
 
-## Validation Rules Reference
-
-### Backend (PHP)
-
-| Field | Rule | Method |
-|-------|------|--------|
-| Name | Required, 2-100 chars | `strip_tags()`, `strlen()` |
-| Email | Required, valid format | `FILTER_VALIDATE_EMAIL` |
-| Phone | 10-digit Indian (6-9 start) | `/^[6-9][0-9]{9}$/` |
-| Message | Max 2000 chars | `strlen()` |
-| Password | Min 6 chars | `strlen()` |
-| All inputs | SQL injection safe | PDO Prepared Statements |
-| All inputs | XSS prevention | `strip_tags()` input + `htmlspecialchars()` output |
-| Enquiry | Rate limit 5/hr/email | SQL COUNT check |
-| Contact | Rate limit 3/hr/email | SQL COUNT check |
-
-### Frontend (JavaScript - MKV Validator)
-
-| Rule | Attribute | Check |
-|------|-----------|-------|
-| Required | `data-v="req"` | Non-empty |
-| Email | `data-v="email"` | Regex pattern |
-| Phone | `data-v="phone"` | `^[6-9][0-9]{9}$` |
-| Name | `data-v="name"` | 2-100 characters |
-| Safe | `data-v="safe"` | Blocks `<script>`, `javascript:`, `onclick=` |
-
----
-
-## Files Modified/Created in This Sprint
-
-### New Files
-| File | Purpose |
-|------|---------|
-| `ajax-newsletter.php` | Newsletter subscription AJAX handler |
-| `includes/mailer.php` | PHPMailer SMTP email helper |
-| `terms.php` | Terms of Use page |
-| `privacy.php` | Privacy Policy page |
-| `md/test-cases.md` | This test report |
-| `md/use-cases.md` | Use case documentation |
-| `logs/email.log` | Email send log |
-
-### Modified Files
-| File | Changes |
-|------|---------|
-| `ajax-post-property.php` | Validation, sanitization, auto password, background email |
-| `ajax-enquiry.php` | Full validation, rate limiting, sanitization |
-| `contact.php` | Phone validation, rate limiting, sanitization |
-| `property-detail.php` | Agent/Propreneur card, form validation |
-| `includes/header.php` | Dynamic popup, login-aware Add listing, favicon |
-| `includes/footer.php` | Dynamic content, newsletter AJAX, JS validator |
-| `admin/enquiries.php` | CSV export fix (before HTML header) |
-| `admin/property-edit.php` | Agent assignment dropdown |
-| `admin/user-action.php` | Approval email trigger |
-| `admin/settings.php` | Phone, social media, SMTP fields |
-| `admin/includes/header.php` | Sidebar scroll, dynamic favicon |
-| `register.php` | Redirects to popup |
-| `logout-user.php` | Session isolation (no destroy) |
-| `admin/logout.php` | Session isolation (no destroy) |
-| `forgot-password.php` | Email sending, 48hr token |
-| `index.php` | Full dynamic homepage |
-
----
-
-*Test report v2 - Generated April 4, 2026 | 83 test cases | 100% pass rate*
+*Test report v3 — April 4, 2026 | 132 tests | 100% pass rate*

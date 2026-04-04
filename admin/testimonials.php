@@ -376,24 +376,26 @@ require_once 'includes/header.php';
   </div>
 </div>
 
-<script>
-// Populate edit modal
-$(document).on('click', '.edit-btn', function () {
-    $('#editId').val($(this).data('id'));
-    $('#editName').val($(this).data('name'));
-    $('#editDesignation').val($(this).data('designation'));
-    $('#editContent').val($(this).data('content'));
-    $('#editRating').val($(this).data('rating'));
-    $('#editSortOrder').val($(this).data('sort-order'));
-    $('#editIsActive').prop('checked', $(this).data('is-active') == 1);
-});
+<?php require_once 'includes/footer.php'; ?>
 
-// Delete confirmation
-$(document).on('click', '.btn-delete', function () {
-    $('#delete-id').val($(this).data('id'));
-    $('#delete-name').text($(this).data('name'));
-    $('#deleteModal').modal('show');
+<script>
+$(document).ready(function() {
+  // Populate edit modal
+  $(document).on('click', '.edit-btn', function () {
+      $('#editId').val($(this).data('id'));
+      $('#editName').val($(this).data('name'));
+      $('#editDesignation').val($(this).data('designation'));
+      $('#editContent').val($(this).data('content'));
+      $('#editRating').val($(this).data('rating'));
+      $('#editSortOrder').val($(this).data('sort-order'));
+      $('#editIsActive').prop('checked', $(this).data('is-active') == 1);
+  });
+
+  // Delete confirmation
+  $(document).on('click', '.btn-delete', function () {
+      $('#delete-id').val($(this).data('id'));
+      $('#delete-name').text($(this).data('name'));
+      $('#deleteModal').modal('show');
+  });
 });
 </script>
-
-<?php require_once 'includes/footer.php'; ?>

@@ -2,10 +2,11 @@
    require_once __DIR__ . '/includes/db.php';
    
    // ---- Filters ----
-   $listing_type  = $_GET['listing_type']  ?? '';
-   $property_type = $_GET['property_type'] ?? '';
+   $listing_type  = $_GET['listing_type']  ?? $_GET['listing'] ?? '';
+   $property_type = $_GET['property_type'] ?? $_GET['type'] ?? '';
    $bedrooms      = $_GET['bedrooms']      ?? '';
-   $search        = trim($_GET['q']        ?? '');
+   $search        = trim($_GET['q']        ?? $_GET['search'] ?? '');
+   $city          = trim($_GET['city']     ?? '');
    $location_id   = $_GET['location_id']   ?? '';
    $sort          = $_GET['sort']          ?? 'newest';
    $page          = max(1, (int)($_GET['page'] ?? 1));
@@ -36,6 +37,10 @@
        $where[]  = "(p.title LIKE ? OR p.address LIKE ? OR l.city LIKE ? OR l.area LIKE ?)";
        $like     = "%$search%";
        $params[] = $like; $params[] = $like; $params[] = $like; $params[] = $like;
+   }
+   if ($city) {
+       $where[]  = "l.city LIKE ?";
+       $params[] = "%$city%";
    }
    if ($location_id) {
        $where[]  = "p.location_id = ?";
@@ -243,8 +248,8 @@
                      <div class="filter-range-header">
                         <h6 class="filter-title">PRICE RANGE</h6>
                         <span class="range-value" id="priceRangeLabel">
-                        ₹<?= $_GET['price_min'] ? number_format($_GET['price_min']/100000,0) . ' Lac' : '0' ?>
-                        - ₹<?= $_GET['price_max'] ? ($_GET['price_max']>=10000000 ? number_format($_GET['price_max']/10000000,1) . ' Cr' : number_format($_GET['price_max']/100000,0) . ' Lac') : '50 Cr' ?>
+                        ₹<?= !empty($_GET['price_min']) ? number_format($_GET['price_min']/100000,0) . ' Lac' : '0' ?>
+                        - ₹<?= !empty($_GET['price_max']) ? ($_GET['price_max']>=10000000 ? number_format($_GET['price_max']/10000000,1) . ' Cr' : number_format($_GET['price_max']/100000,0) . ' Lac') : '50 Cr' ?>
                         </span>
                      </div>
                      <div class="range-slider-wrap">

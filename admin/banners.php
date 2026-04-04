@@ -343,23 +343,25 @@ require_once 'includes/header.php';
   </div>
 </div>
 
-<script>
-// Populate edit modal
-$(document).on('click', '.edit-btn', function () {
-    $('#editId').val($(this).data('id'));
-    $('#editTitle').val($(this).data('title'));
-    $('#editSubtitle').val($(this).data('subtitle'));
-    $('#editLink').val($(this).data('link'));
-    $('#editSortOrder').val($(this).data('sort-order'));
-    $('#editIsActive').prop('checked', $(this).data('is-active') == 1);
-});
+<?php require_once 'includes/footer.php'; ?>
 
-// Delete confirmation
-$(document).on('click', '.btn-delete', function () {
-    $('#delete-id').val($(this).data('id'));
-    $('#delete-title').text($(this).data('title'));
-    $('#deleteModal').modal('show');
+<script>
+$(document).ready(function() {
+    // Populate edit modal
+    $(document).on('click', '.edit-btn', function () {
+        $('#editId').val($(this).data('id'));
+        $('#editTitle').val($(this).data('title'));
+        $('#editSubtitle').val($(this).data('subtitle'));
+        $('#editLink').val($(this).data('link'));
+        $('#editSortOrder').val($(this).data('sort-order'));
+        $('#editIsActive').prop('checked', $(this).data('is-active') == 1);
+    });
+
+    // Delete confirmation
+    $(document).on('click', '.btn-delete', function () {
+        $('#delete-id').val($(this).data('id'));
+        $('#delete-title').text($(this).data('title'));
+        $('#deleteModal').modal('show');
+    });
 });
 </script>
-
-<?php require_once 'includes/footer.php'; ?>

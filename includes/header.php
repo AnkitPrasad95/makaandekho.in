@@ -70,6 +70,79 @@ $siteName = $settings['site_name'] ?? 'MakaanDekho';
                 $megaMenus[$mi['menu_slug']][$mi['column_heading']][] = $mi;
             }
 
+            // Dynamic "For Buyers" — show latest property titles grouped by category
+            $categoryMap = [
+                'Residential' => ['types' => ['apartment','villa'], 'param' => 'apartment'],
+                'Commercial'  => ['types' => ['commercial','office'], 'param' => 'commercial'],
+                'Plots'       => ['types' => ['plot'], 'param' => 'plot'],
+            ];
+            $dynamicBuyer = [];
+            foreach ($categoryMap as $catName => $catInfo) {
+                $inTypes = implode("','", $catInfo['types']);
+                $catStmt = $pdo->query("
+                    SELECT p.title, p.slug, p.property_type, l.city
+                    FROM properties p
+                    LEFT JOIN locations l ON p.location_id = l.id
+                    WHERE p.status='approved' AND p.is_deleted=0
+                      AND p.property_type IN ('$inTypes')
+                    ORDER BY p.created_at DESC LIMIT 8
+                ");
+                $props = $catStmt->fetchAll();
+                if (!empty($props)) {
+                    foreach ($props as $p) {
+                        $label = $p['title'];
+                        if ($p['city']) $label .= ' - ' . $p['city'];
+                        $dynamicBuyer[$catName][] = [
+                            'item_title' => $label,
+                            'item_url'   => 'property-detail.php?slug=' . $p['slug'],
+                        ];
+                    }
+                    $dynamicBuyer[$catName][] = [
+                        'item_title' => 'View All ' . $catName . ' →',
+                        'item_url'   => 'properties.php?type=' . $catInfo['param'],
+                    ];
+                }
+            }
+            if (!empty($dynamicBuyer)) {
+                $megaMenus['for_buyers'] = $dynamicBuyer;
+            }
+
+            // Dynamic "Insights" — blog categories with latest titles
+            $blogCats = $pdo->query("
+                SELECT category, COUNT(*) as cnt
+                FROM blogs
+                WHERE status='published' AND is_deleted=0 AND category IS NOT NULL AND category != ''
+                GROUP BY category ORDER BY cnt DESC
+            ")->fetchAll();
+
+            if (!empty($blogCats)) {
+                $dynamicInsights = [];
+                foreach ($blogCats as $bc) {
+                    $catName = $bc['category'];
+                    // Fetch latest 6 blogs in this category
+                    $catBlogs = $pdo->prepare("
+                        SELECT title, slug FROM blogs
+                        WHERE status='published' AND is_deleted=0 AND category=?
+                        ORDER BY created_at DESC LIMIT 6
+                    ");
+                    $catBlogs->execute([$catName]);
+                    $catPosts = $catBlogs->fetchAll();
+
+                    foreach ($catPosts as $cp) {
+                        $dynamicInsights[$catName][] = [
+                            'item_title' => $cp['title'],
+                            'item_url'   => 'blog-detail.php?slug=' . $cp['slug'],
+                        ];
+                    }
+                    // "View All" link for this category
+                    $dynamicInsights[$catName][] = [
+                        'item_title' => 'View All ' . $catName . ' →',
+                        'item_url'   => 'blogs.php?category=' . urlencode($catName),
+                    ];
+                }
+                $megaMenus['insights'] = $dynamicInsights;
+            }
+
             $navItems = [
                 ['label' => 'Home',              'slug' => null,              'href' => SITE_URL],
                 ['label' => 'For Buyers',        'slug' => 'for_buyers',     'href' => '#'],
@@ -95,8 +168,13 @@ $siteName = $settings['site_name'] ?? 'MakaanDekho';
                             <div class="mega-col">
                                 <h6 class="mega-heading"><?= htmlspecialchars($colHeading) ?></h6>
                                 <ul>
-                                    <?php foreach ($colItems as $mi): ?>
-                                    <li><a href="<?= htmlspecialchars($mi['item_url']) ?>"><?= htmlspecialchars($mi['item_title']) ?></a></li>
+                                    <?php foreach ($colItems as $mi):
+                                        $mUrl = $mi['item_url'];
+                                        if ($mUrl && $mUrl !== '#' && strpos($mUrl,'http') !== 0) {
+                                            $mUrl = SITE_URL . ltrim($mUrl, '/');
+                                        }
+                                    ?>
+                                    <li><a href="<?= htmlspecialchars($mUrl) ?>"><?= htmlspecialchars($mi['item_title']) ?></a></li>
                                     <?php endforeach; ?>
                                 </ul>
                             </div>

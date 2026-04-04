@@ -183,16 +183,18 @@ $counts = $pdo->query("SELECT status, COUNT(*) FROM enquiries WHERE is_deleted=0
   </div>
 </div>
 
+<?php require_once 'includes/footer.php'; ?>
+
 <script>
-$('#enqModal').on('show.bs.modal', function (e) {
-  var b = $(e.relatedTarget);
-  $('#m-name').text(b.data('name'));
-  $('#m-email').text(b.data('email'));
-  $('#m-phone').text(b.data('phone') || '–');
-  $('#m-property').text(b.data('property'));
-  $('#m-date').text(b.data('date'));
-  $('#m-message').text(b.data('message') || '(no message)');
+$(document).ready(function() {
+    $('#enqModal').on('show.bs.modal', function (e) {
+        var b = $(e.relatedTarget);
+        $('#m-name').text(b.data('name'));
+        $('#m-email').text(b.data('email'));
+        $('#m-phone').text(b.data('phone') || '–');
+        $('#m-property').text(b.data('property'));
+        $('#m-date').text(b.data('date'));
+        $('#m-message').text(b.data('message') || '(no message)');
+    });
 });
 </script>
-
-<?php require_once 'includes/footer.php'; ?>

@@ -231,6 +231,8 @@ require_once 'includes/header.php';
   </div>
 </form>
 
+<?php require_once 'includes/footer.php'; ?>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
   // Image preview
@@ -249,20 +251,21 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
-<?php require_once 'includes/footer.php'; ?>
 <script>
-$('#blogContent').summernote({
-  height: 300,
-  placeholder: 'Write your blog content here...',
-  toolbar: [
-    ['style', ['style']],
-    ['font', ['bold', 'italic', 'underline', 'strikethrough', 'clear']],
-    ['fontsize', ['fontsize']],
-    ['color', ['color']],
-    ['para', ['ul', 'ol', 'paragraph']],
-    ['table', ['table']],
-    ['insert', ['link', 'picture', 'video', 'hr']],
-    ['view', ['fullscreen', 'codeview']]
-  ]
+$(document).ready(function() {
+  $('#blogContent').summernote({
+    height: 300,
+    placeholder: 'Write your blog content here...',
+    toolbar: [
+      ['style', ['style']],
+      ['font', ['bold', 'italic', 'underline', 'strikethrough', 'clear']],
+      ['fontsize', ['fontsize']],
+      ['color', ['color']],
+      ['para', ['ul', 'ol', 'paragraph']],
+      ['table', ['table']],
+      ['insert', ['link', 'picture', 'video', 'hr']],
+      ['view', ['fullscreen', 'codeview']]
+    ]
+  });
 });
 </script>
