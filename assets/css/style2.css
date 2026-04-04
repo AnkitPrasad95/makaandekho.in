@@ -21440,6 +21440,7 @@ button.bg-active-white:focus {
 
 .bg-hover-overlay:hover::before {
   background-color: rgba(0, 0, 0, 0.4);
+  z-index: 1;
 }
 
 .bg-hover-overlay-white {

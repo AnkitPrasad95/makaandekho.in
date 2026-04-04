@@ -247,3 +247,7 @@ function setActiveTab(el) {
     tabs.forEach(tab => tab.classList.remove('active'));
     el.classList.add('active');
 }
+
+$(document).ready(function(){
+  $('[data-toggle="tooltip"]').tooltip();
+});

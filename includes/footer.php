@@ -1,5 +1,5 @@
 <!-- ========== FOOTER ========== -->
-<footer class="site-footer">
+<footer class="site-footer bg-dark pt-8 pb-6 footer text-muted">
     <div class="container">
         <div class="row gy-4">
             <!-- Brand -->
