@@ -17,6 +17,10 @@ define('UPLOAD_DIR', rtrim(str_replace('\\', '/', realpath(__DIR__ . '/../upload
 
 try {
     $pdo = new PDO(
+        //User “ankitgeneral_makaan_dekho_user” was added to the database “ankitgeneral_makaan_dekho”.
+        //ankitgeneral_makaan_dekho
+        //makaan_dekho_user
+        //password: %giohLS.vSy3lkjZ
         'mysql:host=localhost;dbname=makaan_dekho;charset=utf8mb4',
         'root',
         '',

@@ -2,11 +2,12 @@
 require_once __DIR__ . '/includes/db.php';
 
 $slug = $_GET['slug'] ?? '';
+$locationSlug = $_GET['location'] ?? '';
 if (!$slug) { header('Location: ' . SITE_URL . 'properties.php'); exit; }
 
-// Fetch property
+// Fetch property with location slug
 $stmt = $pdo->prepare("
-    SELECT p.*, l.city, l.area, l.state
+    SELECT p.*, l.city, l.area, l.state, l.slug AS location_slug
     FROM properties p
     LEFT JOIN locations l ON p.location_id = l.id
     WHERE p.slug = ? AND p.status = 'approved' AND p.is_deleted=0
@@ -15,6 +16,12 @@ $stmt = $pdo->prepare("
 $stmt->execute([$slug]);
 $prop = $stmt->fetch();
 if (!$prop) { include __DIR__ . '/includes/header.php'; echo '<div class="container py-5 text-center"><h3>Property Not Found</h3><a href="'.SITE_URL.'properties.php" class="btn btn-primary mt-3">Browse Properties</a></div>'; include __DIR__ . '/includes/footer.php'; exit; }
+
+// If accessed via /property/slug, redirect to SEO URL /location-slug/property-slug
+if (empty($locationSlug) && !empty($prop['location_slug'])) {
+    header('Location: ' . SITE_URL . $prop['location_slug'] . '/' . $prop['slug'], true, 301);
+    exit;
+}
 
 // Gallery images
 $imgStmt = $pdo->prepare("SELECT * FROM property_images WHERE property_id = ? AND is_deleted=0 ORDER BY is_primary DESC, id ASC");
@@ -70,8 +77,11 @@ function fmtPrice($p) {
     return '₹' . number_format($p);
 }
 
-$pageTitle = htmlspecialchars($prop['title']) . ' | MakaanDekho';
-$pageDesc  = htmlspecialchars($prop['meta_description'] ?? $prop['short_description'] ?? '');
+$areaCity = ($prop['area'] ? $prop['area'] . ', ' : '') . ($prop['city'] ?? '');
+$pageTitle = $prop['title'] . ' in ' . $areaCity . ' | MakaanDekho';
+$pageDesc  = $prop['meta_description'] ?? $prop['short_description'] ?? ('Find ' . $prop['title'] . ' in ' . $areaCity . ', ' . ($prop['state'] ?? '') . '. View price, photos, amenities and more on MakaanDekho.');
+$pageKeywords = $prop['title'] . ', property in ' . ($prop['city'] ?? '') . ', ' . ($prop['area'] ?? '') . ', real estate ' . ($prop['city'] ?? '') . ', ' . ($prop['state'] ?? '');
+$pageCanonical = !empty($prop['location_slug']) ? SITE_URL . $prop['location_slug'] . '/' . $prop['slug'] : SITE_URL . 'property/' . $prop['slug'];
 include __DIR__ . '/includes/header.php';
 
 // Featured image
@@ -337,8 +347,8 @@ if (!empty($prop['featured_image'])) $featImg = UPLOAD_URL . 'properties/' . $pr
                 </ul>
             </div>
 
-            <!-- EMI Calculator -->
-            <div class="pd-sidebar-card">
+            <!-- EMI Calculator (hidden for now) -->
+            <!-- <div class="pd-sidebar-card">
                 <h6 class="sidebar-card-title"><i class="fas fa-calculator"></i> EMI Calculator</h6>
                 <p style="font-size:12px;color:#888;margin-bottom:14px;">Calculate your monthly payments</p>
                 <div class="emi-field">
@@ -368,7 +378,7 @@ if (!empty($prop['featured_image'])) $featImg = UPLOAD_URL . 'properties/' . $pr
                     <div class="emi-result-row"><span>Total Interest</span><span id="emiInterest">-</span></div>
                     <div class="emi-result-row total"><span>Total Amount</span><strong id="emiTotal">-</strong></div>
                 </div>
-            </div>
+            </div> -->
 
             <!-- Share / Actions -->
             <div class="pd-sidebar-card">

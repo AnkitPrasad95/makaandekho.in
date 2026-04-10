@@ -1,10 +1,8 @@
 RewriteEngine On
 RewriteBase /makaandekho.in/
 
-# Remove .php extension
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^([^/]+)/?$ $1.php [L,QSA]
+# Sitemap XML
+RewriteRule ^sitemap\.xml$ sitemap.php [L]
 
 # Property detail clean URL: /property/slug-name
 RewriteRule ^property/([a-zA-Z0-9_-]+)/?$ property-detail.php?slug=$1 [L,QSA]
@@ -12,11 +10,15 @@ RewriteRule ^property/([a-zA-Z0-9_-]+)/?$ property-detail.php?slug=$1 [L,QSA]
 # Blog detail clean URL: /blog/slug-name
 RewriteRule ^blog/([a-zA-Z0-9_-]+)/?$ blog-detail.php?slug=$1 [L,QSA]
 
-# Market area pages: /city-name
-# (handled by the market-area.php file)
+# Property in location: /location-slug/property-slug (SEO URL)
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^([a-zA-Z0-9_-]+)/([a-zA-Z0-9_-]+)/?$ market-area.php?city=$1&property=$2 [L,QSA]
+RewriteRule ^([a-zA-Z0-9_-]+)/([a-zA-Z0-9_-]+)/?$ property-detail.php?location=$1&slug=$2 [L,QSA]
+
+# Market area: /location-slug  (e.g. /delhi-connaught-place)
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^([a-zA-Z0-9_-]+)/?$ market-area.php?slug=$1 [L,QSA]
 
 # Prevent directory listing
 Options -Indexes

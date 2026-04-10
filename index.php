@@ -163,7 +163,7 @@ include __DIR__ . '/includes/header.php';
                         <div class="col-md-6 col-lg-4 col-xl-5 pt-6 pt-lg-0 order-2">
                             <label class="text-uppercase font-weight-500 letter-spacing-093">Search</label>
                             <div class="position-relative">
-                                <input type="text" name="search" class="form-control bg-transparent shadow-none border-top-0 border-right-0 border-left-0 border-bottom rounded-0 h-24 lh-17 pl-0 pr-4 font-weight-600 border-color-input placeholder-muted" placeholder="Search project, locality or builder...">
+                                <input type="text" name="search" id="heroSearch" class="form-control bg-transparent shadow-none border-top-0 border-right-0 border-left-0 border-bottom rounded-0 h-24 lh-17 pl-0 pr-4 font-weight-600 border-color-input placeholder-muted" placeholder="Search project, locality or builder..." autocomplete="off">
                                 <i class="far fa-search position-absolute pos-fixed-right-center pr-0 fs-18 mt-n3"></i>
                             </div>
                         </div>
@@ -458,7 +458,7 @@ function renderPropertySection($title, $subtitle, $properties, $siteUrl, $upload
                     <h2>Find your<br>neighborhood</h2>
                     <p>Search properties by locality, city or project name across India</p>
                     <form class="neighborhood-search" action="<?= SITE_URL ?>properties.php" method="GET">
-                        <input type="text" name="search" placeholder="Enter city, locality or project name">
+                        <input type="text" name="search" id="neighborhoodSearch" placeholder="Enter city, locality or project name" autocomplete="off">
                         <button type="submit"><i class="fas fa-search"></i></button>
                     </form>
                 </div>

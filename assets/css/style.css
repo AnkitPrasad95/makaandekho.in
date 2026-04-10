@@ -1009,8 +1009,21 @@ section { padding: 70px 0; }
    POST PROPERTY MODAL
    ============================================================ */
 /* Post Property Modal */
-#postPropertyModal .modal-content { border: none; border-radius: 14px; display: block !important; }
+#postPropertyModal .modal-content { border: none; border-radius: 14px; overflow: hidden; }
 #postPropertyModal .pp-modal-body { max-height: 70vh; overflow-y: auto; }
+.pac-container { z-index: 1060 !important; }
+.gp-autocomplete-dropdown {
+    position: absolute; left: 0; right: 0; top: 100%;
+    background: #fff; border: 1px solid #e5e7eb; border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0,0,0,.12); z-index: 1070;
+    max-height: 240px; overflow-y: auto; display: none;
+}
+.gp-autocomplete-item {
+    padding: 10px 14px; cursor: pointer; font-size: 13px; color: #1a2332;
+    border-bottom: 1px solid #f3f4f6;
+}
+.gp-autocomplete-item:last-child { border-bottom: none; }
+.gp-autocomplete-item:hover { background: #f0f9ff; }
 .pp-modal-header {
     background: linear-gradient(135deg, #0f172a, #1e40af);
     padding: 28px 30px 22px;

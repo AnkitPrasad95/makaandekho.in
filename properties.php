@@ -149,7 +149,7 @@
                <div class="form-group p-1 col-md-8 search_input">
                   <form method="GET" action="<?= SITE_URL ?>properties.php" class="listing-search-for form-inline mx-n1">
                      <i class="fas fa-search"></i>
-                     <input type="text" name="q" value="<?= htmlspecialchars($search) ?>" placeholder="Search Location, Builder or Project Name..." class="form-control border-0 shadow-xxs-1 bg-transparent font-weight-600">
+                     <input type="text" name="q" id="listingSearch" value="<?= htmlspecialchars($search) ?>" placeholder="Search Location, Builder or Project Name..." class="form-control border-0 shadow-xxs-1 bg-transparent font-weight-600" autocomplete="off">
                      <?php if ($property_type): ?><input type="hidden" name="property_type" value="<?= htmlspecialchars($property_type) ?>"><?php endif; ?>
                   </form>
                </div>
@@ -254,10 +254,10 @@
                      </div>
                      <div class="range-slider-wrap">
                         <input type="range" name="price_min" class="range-slider" min="0" max="500000000" step="500000"
-                           value="<?= $_GET['price_min'] ?? 0 ?>" id="priceMin"
+                           value="<?= (int)($_GET['price_min'] ?? 0) ?>" id="priceMin"
                            oninput="updatePriceLabel()" onchange="this.form.submit()">
                         <input type="range" name="price_max" class="range-slider" min="0" max="500000000" step="500000"
-                           value="<?= $_GET['price_max'] ?? 500000000 ?>" id="priceMax"
+                           value="<?= (int)($_GET['price_max'] ?? 500000000) ?>" id="priceMax"
                            oninput="updatePriceLabel()" onchange="this.form.submit()">
                      </div>
                      <div class="range-labels">
@@ -290,15 +290,15 @@
                      <div class="filter-range-header">
                         <h6 class="filter-title">AREA (SQ.FT)</h6>
                         <span class="range-value" id="areaRangeLabel">
-                        <?= $_GET['area_min'] ?? '0' ?> - <?= $_GET['area_max'] ?? '1L+' ?>
+                        <?= (int)($_GET['area_min'] ?? 0) ?> - <?= htmlspecialchars($_GET['area_max'] ?? '1L+') ?>
                         </span>
                      </div>
                      <div class="range-slider-wrap">
                         <input type="range" name="area_min" class="range-slider" min="0" max="100000" step="100"
-                           value="<?= $_GET['area_min'] ?? 0 ?>" id="areaMin"
+                           value="<?= (int)($_GET['area_min'] ?? 0) ?>" id="areaMin"
                            oninput="updateAreaLabel()" onchange="this.form.submit()">
                         <input type="range" name="area_max" class="range-slider" min="0" max="100000" step="100"
-                           value="<?= $_GET['area_max'] ?? 100000 ?>" id="areaMax"
+                           value="<?= (int)($_GET['area_max'] ?? 100000) ?>" id="areaMax"
                            oninput="updateAreaLabel()" onchange="this.form.submit()">
                      </div>
                      <div class="range-labels">

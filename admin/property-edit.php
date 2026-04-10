@@ -281,7 +281,7 @@ require_once __DIR__ . '/includes/header.php';
           </div></div>
           <div class="col-12"><div class="form-group">
             <label class="form-label" style="font-size:12.5px;font-weight:600;">Full Address</label>
-            <input type="text" name="address" class="form-control" placeholder="Street, Locality, City" value="<?= htmlspecialchars($d['address']??'') ?>">
+            <input type="text" name="address" id="adminAddress" class="form-control" placeholder="Street, Locality, City" value="<?= htmlspecialchars($d['address']??'') ?>" autocomplete="off">
           </div></div>
           <div class="col-12"><div class="form-group mb-0">
             <label class="form-label" style="font-size:12.5px;font-weight:600;"><i class="fas fa-map mr-1 text-danger"></i>Google Map Link</label>

@@ -99,69 +99,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // ---- Post Property Modal: Role Tabs ----
-    document.querySelectorAll('.pp-role').forEach(function (label) {
-        label.addEventListener('click', function () {
-            document.querySelectorAll('.pp-role').forEach(function (l) {
-                l.classList.remove('active');
-            });
-            this.classList.add('active');
-        });
-    });
-
-    // ---- Post Property Modal: AJAX Submit ----
-    var ppForm = document.getElementById('postPropertyForm');
-    if (ppForm) {
-        ppForm.addEventListener('submit', function (e) {
-            e.preventDefault();
-            var btn = document.getElementById('ppSubmitBtn');
-            var errBox = document.getElementById('ppError');
-            errBox.style.display = 'none';
-            btn.disabled = true;
-            btn.textContent = 'Submitting...';
-
-            var formData = new FormData(ppForm);
-
-            fetch(SITE_URL + 'ajax-post-property.php', {
-                method: 'POST',
-                body: formData,
-            })
-            .then(function (r) { return r.json(); })
-            .then(function (data) {
-                if (data.success) {
-                    ppForm.style.display = 'none';
-                    document.getElementById('ppSuccess').style.display = 'block';
-                } else {
-                    errBox.textContent = data.message;
-                    errBox.style.display = 'block';
-                }
-                btn.disabled = false;
-                btn.textContent = 'Post Property Now';
-            })
-            .catch(function () {
-                errBox.textContent = 'Something went wrong. Please try again.';
-                errBox.style.display = 'block';
-                btn.disabled = false;
-                btn.textContent = 'Post Property Now';
-            });
-        });
-    }
-
 });
-
-// ---- Reset Post Property Form ----
-function resetPostForm() {
-    var form = document.getElementById('postPropertyForm');
-    if (form) {
-        form.reset();
-        form.style.display = 'block';
-        document.querySelectorAll('.pp-role').forEach(function (l, i) {
-            l.classList.toggle('active', i === 0);
-        });
-    }
-    document.getElementById('ppSuccess').style.display = 'none';
-    document.getElementById('ppError').style.display = 'none';
-}
 
 
 var APP = APP || {};

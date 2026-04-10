@@ -221,19 +221,19 @@ include __DIR__ . '/includes/header.php';
                 </div>
                 <div class="col-md-4">
                     <label class="wz-label">State</label>
-                    <input type="text" name="state" class="wz-input" placeholder="e.g. Uttar Pradesh" value="<?= htmlspecialchars($_POST['state'] ?? '') ?>">
+                    <input type="text" name="state" id="apState" class="wz-input" placeholder="e.g. Uttar Pradesh" value="<?= htmlspecialchars($_POST['state'] ?? '') ?>">
                 </div>
                 <div class="col-md-4">
                     <label class="wz-label">City</label>
-                    <input type="text" name="city" class="wz-input" placeholder="e.g. Ghaziabad" value="<?= htmlspecialchars($_POST['city'] ?? '') ?>">
+                    <input type="text" name="city" id="apCity" class="wz-input" placeholder="e.g. Ghaziabad" value="<?= htmlspecialchars($_POST['city'] ?? '') ?>" autocomplete="off">
                 </div>
                 <div class="col-md-4">
                     <label class="wz-label">Area / Locality</label>
-                    <input type="text" name="area" class="wz-input" placeholder="e.g. Sector 56" value="<?= htmlspecialchars($_POST['area'] ?? '') ?>">
+                    <input type="text" name="area" id="apArea" class="wz-input" placeholder="e.g. Sector 56" value="<?= htmlspecialchars($_POST['area'] ?? '') ?>">
                 </div>
                 <div class="col-12">
                     <label class="wz-label">Full Address</label>
-                    <input type="text" name="address" class="wz-input" placeholder="Street, Landmark, Area" value="<?= htmlspecialchars($_POST['address'] ?? '') ?>">
+                    <input type="text" name="address" id="apAddress" class="wz-input" placeholder="Street, Landmark, Area" value="<?= htmlspecialchars($_POST['address'] ?? '') ?>" autocomplete="off" spellcheck="false">
                 </div>
                 <div class="col-12">
                     <label class="wz-label">Description</label>

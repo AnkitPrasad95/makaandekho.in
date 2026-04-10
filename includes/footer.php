@@ -87,6 +87,7 @@ $footerPropertyTypes = [
                     <li><a href="<?= SITE_URL ?>about.php">About Us</a></li>
                     <li><a href="<?= SITE_URL ?>blogs.php">Blog</a></li>
                     <li><a href="<?= SITE_URL ?>properties.php">All Properties</a></li>
+                    <li><a href="<?= SITE_URL ?>locations">All Locations</a></li>
                 </ul>
             </div>
 
@@ -377,5 +378,131 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
+
+<!-- Google Places Autocomplete (New API) -->
+<script>
+(function() {
+    function initAllAutocomplete() {
+        // Helper: use AutocompleteService + SessionToken for suggestions
+        var service = new google.maps.places.AutocompleteService();
+        var placesService = new google.maps.places.PlacesService(document.createElement('div'));
+
+        function setupAutocomplete(inputId, types, onSelect) {
+            var input = document.getElementById(inputId);
+            if (!input) return;
+
+            var dropdown = document.createElement('div');
+            dropdown.className = 'gp-autocomplete-dropdown';
+            input.parentNode.style.position = 'relative';
+            input.parentNode.appendChild(dropdown);
+
+            var debounceTimer = null;
+            var sessionToken = new google.maps.places.AutocompleteSessionToken();
+
+            input.addEventListener('input', function() {
+                clearTimeout(debounceTimer);
+                var val = input.value.trim();
+                if (val.length < 2) { dropdown.innerHTML = ''; dropdown.style.display = 'none'; return; }
+
+                debounceTimer = setTimeout(function() {
+                    service.getPlacePredictions({
+                        input: val,
+                        types: types,
+                        componentRestrictions: { country: 'in' },
+                        sessionToken: sessionToken
+                    }, function(predictions, status) {
+                        dropdown.innerHTML = '';
+                        if (status !== 'OK' || !predictions) { dropdown.style.display = 'none'; return; }
+
+                        predictions.forEach(function(p) {
+                            var item = document.createElement('div');
+                            item.className = 'gp-autocomplete-item';
+                            item.innerHTML = '<i class="fas fa-map-marker-alt" style="color:#3b82f6;margin-right:8px;font-size:12px;"></i>' + p.description;
+                            item.addEventListener('mousedown', function(e) {
+                                e.preventDefault();
+                                placesService.getDetails({
+                                    placeId: p.place_id,
+                                    fields: ['address_components', 'formatted_address'],
+                                    sessionToken: sessionToken
+                                }, function(place) {
+                                    sessionToken = new google.maps.places.AutocompleteSessionToken();
+                                    if (!place) return;
+
+                                    var city = '', state = '', area = '', address = place.formatted_address || '';
+                                    (place.address_components || []).forEach(function(comp) {
+                                        if (comp.types.indexOf('sublocality_level_1') !== -1) area = comp.long_name;
+                                        if (comp.types.indexOf('locality') !== -1) city = comp.long_name;
+                                        if (comp.types.indexOf('administrative_area_level_1') !== -1) state = comp.long_name;
+                                    });
+
+                                    onSelect({ city: city, state: state, area: area, address: address });
+                                    dropdown.innerHTML = '';
+                                    dropdown.style.display = 'none';
+                                });
+                            });
+                            dropdown.appendChild(item);
+                        });
+                        dropdown.style.display = 'block';
+                    });
+                }, 300);
+            });
+
+            input.addEventListener('blur', function() {
+                setTimeout(function() { dropdown.style.display = 'none'; }, 200);
+            });
+
+            input.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && dropdown.style.display === 'block') {
+                    e.preventDefault();
+                }
+            });
+        }
+
+        // ---- Post Property Modal: City field ----
+        setupAutocomplete('ppCity', ['(cities)'], function(d) {
+            var el = document.getElementById('ppCity');
+            if (el && d.city) el.value = d.city;
+            if (d.state) {
+                var sel = document.querySelector('#postPropertyForm select[name="state"]');
+                if (sel) {
+                    for (var i = 0; i < sel.options.length; i++) {
+                        if (sel.options[i].value === d.state) { sel.value = d.state; break; }
+                    }
+                }
+            }
+        });
+
+        // ---- Search fields ----
+        ['heroSearch', 'neighborhoodSearch', 'listingSearch'].forEach(function(id) {
+            setupAutocomplete(id, ['geocode'], function(d) {
+                var el = document.getElementById(id);
+                if (el) el.value = d.area ? (d.area + ', ' + d.city) : d.city;
+            });
+        });
+
+        // ---- Add Property: City field ----
+        setupAutocomplete('apCity', ['geocode'], function(d) {
+            var el = document.getElementById('apCity');
+            if (el && d.city) el.value = d.city;
+            var apArea = document.getElementById('apArea');
+            if (apArea && d.area) apArea.value = d.area;
+            var apState = document.getElementById('apState');
+            if (apState && d.state) apState.value = d.state;
+            var apAddr = document.getElementById('apAddress');
+            if (apAddr && d.address) apAddr.value = d.address;
+        });
+
+        // ---- Add Property: Address field ----
+        setupAutocomplete('apAddress', ['geocode'], function(d) {
+            var el = document.getElementById('apAddress');
+            if (el && d.address) el.value = d.address;
+        });
+    }
+
+    // Make callback globally accessible
+    window._initGooglePlaces = initAllAutocomplete;
+})();
+</script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCbb3sXzee-BxcZ4ci1sM0FWHiedO8Cc4c&libraries=places&callback=_initGooglePlaces" async defer></script>
 </body>
 </html>

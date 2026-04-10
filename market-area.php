@@ -1,25 +1,33 @@
 <?php
 require_once __DIR__ . '/includes/db.php';
 
-$citySlug = $_GET['city'] ?? '';
-if (!$citySlug) { header('Location: ' . SITE_URL . 'properties.php'); exit; }
+$slug = $_GET['slug'] ?? '';
+if (!$slug) { header('Location: ' . SITE_URL . 'properties.php'); exit; }
+
+// Check if a .php file exists with this name — if so, serve it (fallback for /about, /contact, etc.)
+$phpFile = __DIR__ . '/' . basename($slug) . '.php';
+if (file_exists($phpFile) && $phpFile !== __FILE__) {
+    include $phpFile;
+    exit;
+}
 
 // Find location by slug
 $locStmt = $pdo->prepare("SELECT * FROM locations WHERE slug = ? AND is_deleted=0 LIMIT 1");
-$locStmt->execute([$citySlug]);
+$locStmt->execute([$slug]);
 $location = $locStmt->fetch();
 
 if (!$location) {
     // Try matching by city name
-    $slug = str_replace('-', ' ', $citySlug);
+    $cityName = str_replace('-', ' ', $slug);
     $locStmt = $pdo->prepare("SELECT * FROM locations WHERE LOWER(city) = LOWER(?) AND is_deleted=0 LIMIT 1");
-    $locStmt->execute([$slug]);
+    $locStmt->execute([$cityName]);
     $location = $locStmt->fetch();
 }
 
 if (!$location) {
+    http_response_code(404);
     include __DIR__ . '/includes/header.php';
-    echo '<div class="container py-5 text-center"><h3>Location Not Found</h3><a href="'.SITE_URL.'properties.php" class="btn btn-primary mt-3">Browse All Properties</a></div>';
+    echo '<div class="container py-5 text-center"><h3>Page Not Found</h3><p>The page you are looking for does not exist.</p><a href="'.SITE_URL.'" class="btn btn-primary mt-3">Go Home</a></div>';
     include __DIR__ . '/includes/footer.php'; exit;
 }
 
@@ -43,10 +51,19 @@ $propStmt = $pdo->prepare("
 $propStmt->execute([$location['id']]);
 $properties = $propStmt->fetchAll();
 
-$cityName = $location['city'] . ($location['area'] ? ' - ' . $location['area'] : '') . ', ' . $location['state'];
+$city  = $location['city'];
+$area  = $location['area'] ?? '';
+$state = $location['state'];
+$cityName = $city . ($area ? ' - ' . $area : '') . ', ' . $state;
+$areaCity = $area ? $area . ', ' . $city : $city;
 
-$pageTitle = "Properties in $cityName | MakaanDekho";
-$pageDesc  = "Browse $total verified properties in $cityName. Find apartments, villas, plots and commercial properties.";
+// SEO Meta — location-specific
+$pageTitle     = "Properties for Sale & Rent in $areaCity, $state | MakaanDekho";
+$pageDesc      = "Explore $total+ verified properties in $areaCity, $state. Find apartments, flats, villas, plots & commercial spaces for sale and rent. Best deals in $city real estate.";
+$pageKeywords  = "properties in $areaCity, flats in $city, apartments in $areaCity, houses for sale $city, rent property $city, real estate $areaCity $state, buy property $city";
+$pageCanonical = SITE_URL . $location['slug'];
+$pageOgType    = 'website';
+
 include __DIR__ . '/includes/header.php';
 
 function maFmtPrice($p) {
@@ -83,7 +100,7 @@ function maFmtPrice($p) {
                 "item": {
                     "@type": "RealEstateListing",
                     "name": <?= json_encode($p['title']) ?>,
-                    "url": "<?= SITE_URL ?>property/<?= $p['slug'] ?>",
+                    "url": "<?= SITE_URL . $location['slug'] . '/' . $p['slug'] ?>",
                     "price": "<?= $p['price'] ?>",
                     "priceCurrency": "INR"
                 }
@@ -105,7 +122,7 @@ function maFmtPrice($p) {
             $thumb = !empty($p['featured_image']) ? UPLOAD_URL.'properties/'.$p['featured_image'] : 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=400&q=75';
         ?>
         <div class="col-md-6 col-lg-4">
-            <a href="<?= SITE_URL ?>property/<?= htmlspecialchars($p['slug']) ?>" class="listing-card-link">
+            <a href="<?= SITE_URL . htmlspecialchars($location['slug']) . '/' . htmlspecialchars($p['slug']) ?>" class="listing-card-link">
             <div class="property-card">
                 <div class="card-thumb">
                     <img src="<?= htmlspecialchars($thumb) ?>" alt="<?= htmlspecialchars($p['title']) ?>">
@@ -133,7 +150,7 @@ function maFmtPrice($p) {
     <nav class="pagination-wrap">
         <ul class="pagination">
             <?php for ($i=1; $i<=$total_pages; $i++): ?>
-            <li class="page-item <?= $i===$page?'active':'' ?>"><a class="page-link" href="?city=<?= urlencode($citySlug) ?>&page=<?= $i ?>"><?= $i ?></a></li>
+            <li class="page-item <?= $i===$page?'active':'' ?>"><a class="page-link" href="<?= SITE_URL . htmlspecialchars($slug) ?>?page=<?= $i ?>"><?= $i ?></a></li>
             <?php endfor; ?>
         </ul>
     </nav>

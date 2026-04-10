@@ -5,8 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= htmlspecialchars($pageTitle ?? ($settings['meta_title'] ?? 'MakaanDekho – Find Your Dream Home')) ?></title>
     <meta name="description" content="<?= htmlspecialchars($pageDesc ?? ($settings['meta_description'] ?? 'Search properties for sale and rent across India.')) ?>">
-    <?php if (!empty($settings['meta_keywords'])): ?>
-    <meta name="keywords" content="<?= htmlspecialchars($settings['meta_keywords']) ?>">
+    <meta name="keywords" content="<?= htmlspecialchars($pageKeywords ?? ($settings['meta_keywords'] ?? '')) ?>">
+    <?php if (!empty($pageCanonical)): ?>
+    <link rel="canonical" href="<?= htmlspecialchars($pageCanonical) ?>">
     <?php endif; ?>
     <?php if (!empty($settings['favicon'])): ?>
     <link rel="icon" href="<?= UPLOAD_URL . 'settings/' . $settings['favicon'] ?>">
@@ -15,8 +16,8 @@
     <!-- Open Graph -->
     <meta property="og:title" content="<?= htmlspecialchars($pageTitle ?? ($settings['meta_title'] ?? 'MakaanDekho')) ?>">
     <meta property="og:description" content="<?= htmlspecialchars($pageDesc ?? ($settings['meta_description'] ?? '')) ?>">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="<?= SITE_URL ?>">
+    <meta property="og:type" content="<?= $pageOgType ?? 'website' ?>">
+    <meta property="og:url" content="<?= htmlspecialchars($pageCanonical ?? SITE_URL) ?>">
     <?php if (!empty($settings['site_logo'])): ?>
     <meta property="og:image" content="<?= UPLOAD_URL . 'settings/' . $settings['site_logo'] ?>">
     <?php endif; ?>
@@ -247,7 +248,7 @@ $siteName = $settings['site_name'] ?? 'MakaanDekho';
 <!-- ========== POST PROPERTY MODAL ========== -->
 <div class="modal fade" id="postPropertyModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog" style="max-width:520px;margin:60px auto;">
-    <div class="modal-content" style="border:none;border-radius:14px;overflow:visible;display:block !important;">
+    <div class="modal-content" style="border:none;border-radius:14px;overflow:hidden;">
       <!-- Header -->
       <div class="pp-modal-header">
         <h5>Post Your Property</h5>
@@ -350,7 +351,7 @@ $siteName = $settings['site_name'] ?? 'MakaanDekho';
           <label class="pp-label">City</label>
           <div class="pp-input-icon">
             <i class="fas fa-map-marker-alt"></i>
-            <input type="text" name="city" class="pp-input" placeholder="e.g. Noida" required data-v="req|safe" data-msg="City is required.">
+            <input type="text" name="city" id="ppCity" class="pp-input" placeholder="e.g. Noida" required data-v="req|safe" data-msg="City is required." autocomplete="off">
           </div>
 
           <!-- State -->
