@@ -23,7 +23,8 @@ $stmt = $pdo->prepare("
 $stmt->execute([current_user_id()]);
 $favourites = $stmt->fetchAll();
 
-$pageTitle = 'Saved Properties | MakaanDekho';
+$pageTitle   = 'Saved Properties | MakaanDekho';
+$pageNoIndex = true;
 include __DIR__ . '/includes/header.php';
 ?>
 

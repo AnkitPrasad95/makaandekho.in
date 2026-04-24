@@ -43,7 +43,8 @@ $recentEnq = $pdo->prepare("SELECT e.*, p.title as prop_title FROM enquiries e J
 $recentEnq->execute([$user_id]);
 $recentEnquiries = $recentEnq->fetchAll();
 
-$pageTitle = 'Dashboard | MakaanDekho';
+$pageTitle   = 'Dashboard | MakaanDekho';
+$pageNoIndex = true;
 include __DIR__ . '/includes/header.php';
 ?>
 

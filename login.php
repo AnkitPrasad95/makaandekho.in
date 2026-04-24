@@ -41,7 +41,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-$pageTitle = 'Login | MakaanDekho';
+$pageTitle   = 'Login | MakaanDekho';
+$pageNoIndex = true;
 include __DIR__ . '/includes/header.php';
 ?>
 

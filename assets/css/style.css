@@ -1079,7 +1079,7 @@ select.pp-input { cursor: pointer; }
 .pp-input-icon {
     position: relative;
 }
-.pp-input-icon i {
+.pp-input-icon > i {
     position: absolute;
     left: 14px;
     top: 50%;
@@ -2328,7 +2328,7 @@ textarea.pd-input { resize: vertical; }
     background-color: #d6e8ea;
     border-color: #cde3e6;
 }
-.search_input i {
+.search_input > form > i {
     position: absolute;
     left: 20px;
 }

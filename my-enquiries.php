@@ -14,7 +14,8 @@ $stmt = $pdo->prepare("
 $stmt->execute([current_user_id()]);
 $enquiries = $stmt->fetchAll();
 
-$pageTitle = 'My Enquiries | MakaanDekho';
+$pageTitle   = 'My Enquiries | MakaanDekho';
+$pageNoIndex = true;
 include __DIR__ . '/includes/header.php';
 ?>
 

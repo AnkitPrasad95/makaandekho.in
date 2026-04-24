@@ -78,15 +78,19 @@ function fmtPrice($p) {
 }
 
 $areaCity = ($prop['area'] ? $prop['area'] . ', ' : '') . ($prop['city'] ?? '');
-$pageTitle = $prop['title'] . ' in ' . $areaCity . ' | MakaanDekho';
-$pageDesc  = $prop['meta_description'] ?? $prop['short_description'] ?? ('Find ' . $prop['title'] . ' in ' . $areaCity . ', ' . ($prop['state'] ?? '') . '. View price, photos, amenities and more on MakaanDekho.');
-$pageKeywords = $prop['title'] . ', property in ' . ($prop['city'] ?? '') . ', ' . ($prop['area'] ?? '') . ', real estate ' . ($prop['city'] ?? '') . ', ' . ($prop['state'] ?? '');
-$pageCanonical = !empty($prop['location_slug']) ? SITE_URL . $prop['location_slug'] . '/' . $prop['slug'] : SITE_URL . 'property/' . $prop['slug'];
-include __DIR__ . '/includes/header.php';
 
-// Featured image
+// Featured image (computed early so it can be used as OG image)
 $featImg = 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&q=80';
 if (!empty($prop['featured_image'])) $featImg = UPLOAD_URL . 'properties/' . $prop['featured_image'];
+
+// ---- SEO ----
+$pageTitle     = $prop['title'] . ' in ' . $areaCity . ' | MakaanDekho';
+$pageDesc      = $prop['meta_description'] ?? $prop['short_description'] ?? ('Find ' . $prop['title'] . ' in ' . $areaCity . ', ' . ($prop['state'] ?? '') . '. View price, photos, amenities and more on MakaanDekho.');
+$pageKeywords  = $prop['title'] . ', property in ' . ($prop['city'] ?? '') . ', ' . ($prop['area'] ?? '') . ', real estate ' . ($prop['city'] ?? '') . ', ' . ($prop['state'] ?? '');
+$pageCanonical = !empty($prop['location_slug']) ? SITE_URL . $prop['location_slug'] . '/' . $prop['slug'] : SITE_URL . 'property/' . $prop['slug'];
+$pageOgType    = 'product';
+$pageOgImage   = $featImg;
+include __DIR__ . '/includes/header.php';
 ?>
 
 <!-- ========== PROPERTY DETAIL ========== -->

@@ -77,7 +77,8 @@ if (!empty($_GET['token'])) {
     }
 }
 
-$pageTitle = 'Forgot Password | MakaanDekho';
+$pageTitle   = 'Forgot Password | MakaanDekho';
+$pageNoIndex = true;
 include __DIR__ . '/includes/header.php';
 ?>
 

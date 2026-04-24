@@ -104,6 +104,16 @@ $stmtAgents = $pdo->query("SELECT u.id, u.name, u.role, u.city, u.state, COUNT(p
     ORDER BY prop_count DESC LIMIT 6");
 $topAgents = $stmtAgents->fetchAll();
 
+// ---- SEO ----
+$pageTitle    = $settings['meta_title'] ?? ($siteName . ' – Find Your Dream Home in India | Properties for Sale & Rent');
+$pageDesc     = $settings['meta_description'] ?? ('Search ' . number_format($totalProperties) . '+ verified properties for sale and rent across ' . $totalLocations . '+ cities in India. Apartments, villas, plots, commercial spaces & more on ' . $siteName . '.');
+$pageKeywords = $settings['meta_keywords'] ?? 'real estate India, properties for sale, properties for rent, apartments, villas, flats, plots, commercial property, MakaanDekho';
+$pageCanonical = SITE_URL;
+$pageOgType    = 'website';
+if (!empty($banners[0]['image']) && file_exists(UPLOAD_DIR . 'banners/' . $banners[0]['image'])) {
+    $pageOgImage = UPLOAD_URL . 'banners/' . $banners[0]['image'];
+}
+
 include __DIR__ . '/includes/header.php';
 ?>
 
@@ -513,7 +523,7 @@ function renderPropertySection($title, $subtitle, $properties, $siteUrl, $upload
                     if (!empty($blogs)):
                         foreach (array_slice($blogs, 0, 5) as $sb):
                     ?>
-                    <a href="<?= SITE_URL ?>blog-detail.php?slug=<?= htmlspecialchars($sb['slug']) ?>" class="article-link">
+                    <a href="<?= SITE_URL ?>blog/<?= htmlspecialchars($sb['slug']) ?>" class="article-link">
                         <i class="fas fa-arrow-right"></i> <?= htmlspecialchars(mb_substr($sb['title'], 0, 50)) ?><?= mb_strlen($sb['title']) > 50 ? '...' : '' ?>
                     </a>
                     <?php
@@ -537,7 +547,7 @@ function renderPropertySection($title, $subtitle, $properties, $siteUrl, $upload
                     <div class="col-md-6">
                         <div class="blog-card">
                             <div class="blog-thumb hover-shine">
-                                <a href="<?= SITE_URL ?>blog-detail.php?slug=<?= htmlspecialchars($blog['slug']) ?>">
+                                <a href="<?= SITE_URL ?>blog/<?= htmlspecialchars($blog['slug']) ?>">
                                     <img src="<?= htmlspecialchars($blogImg) ?>" alt="<?= htmlspecialchars($blog['title']) ?>">
                                 </a>
                                 <span class="blog-category"><?= htmlspecialchars($blog['category'] ?? 'News') ?></span>
@@ -547,11 +557,11 @@ function renderPropertySection($title, $subtitle, $properties, $siteUrl, $upload
                                     <span><i class="far fa-calendar"></i> <?= date('jS M, Y', strtotime($blog['created_at'])) ?></span>
                                     <span><i class="far fa-eye"></i> <?= $blog['views'] ?? 0 ?> views</span>
                                 </div>
-                                <h5><a href="<?= SITE_URL ?>blog-detail.php?slug=<?= htmlspecialchars($blog['slug']) ?>" style="color:inherit;text-decoration:none;">
+                                <h5><a href="<?= SITE_URL ?>blog/<?= htmlspecialchars($blog['slug']) ?>" style="color:inherit;text-decoration:none;">
                                     <?= htmlspecialchars($blog['title']) ?>
                                 </a></h5>
                                 <p><?= htmlspecialchars(mb_substr($blog['short_description'] ?? '', 0, 120)) ?>...</p>
-                                <a href="<?= SITE_URL ?>blog-detail.php?slug=<?= htmlspecialchars($blog['slug']) ?>" class="read-more">
+                                <a href="<?= SITE_URL ?>blog/<?= htmlspecialchars($blog['slug']) ?>" class="read-more">
                                     Read more <i class="fas fa-arrow-right"></i>
                                 </a>
                             </div>

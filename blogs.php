@@ -60,7 +60,15 @@ function buildBlogPageUrl(int $p): string {
     return '?' . http_build_query($params);
 }
 
-$pageTitle = 'Blog & News' . ($category ? " – $category" : '') . ' | MakaanDekho';
+// ---- SEO ----
+$siteName     = $settings['site_name'] ?? 'MakaanDekho';
+$pageTitle    = 'Blog & News' . ($category ? " – $category" : ($search ? " – $search" : '')) . ' | ' . $siteName;
+$pageDesc     = $category
+    ? "Read the latest articles on $category from $siteName. Real estate insights, buying guides, market trends and expert tips."
+    : 'Real estate insights, market trends, buying guides and expert tips from ' . $siteName . '. Stay informed about India property market.';
+$pageKeywords = ($category ?: 'real estate blog') . ', property news, market trends, home buying guide, real estate India, ' . $siteName;
+$pageCanonical = SITE_URL . 'blogs.php' . ($category ? '?category=' . urlencode($category) : '');
+$pageOgType    = 'website';
 include __DIR__ . '/includes/header.php';
 ?>
 
@@ -113,7 +121,7 @@ include __DIR__ . '/includes/header.php';
                 <!-- First post = featured large card -->
                 <?php if ($i === 0 && $page === 1 && !$search): ?>
                 <div class="col-12">
-                    <a href="<?= SITE_URL ?>blog-detail.php?slug=<?= htmlspecialchars($blog['slug']) ?>" class="blog-featured-card">
+                    <a href="<?= SITE_URL ?>blog/<?= htmlspecialchars($blog['slug']) ?>" class="blog-featured-card">
                         <div class="blog-featured-img">
                             <img src="<?= htmlspecialchars($blogImg) ?>" alt="<?= htmlspecialchars($blog['title']) ?>">
                             <?php if ($blog['category']): ?>
@@ -137,7 +145,7 @@ include __DIR__ . '/includes/header.php';
                 <?php else: ?>
                 <!-- Regular card -->
                 <div class="col-md-6">
-                    <a href="<?= SITE_URL ?>blog-detail.php?slug=<?= htmlspecialchars($blog['slug']) ?>" class="blog-list-card">
+                    <a href="<?= SITE_URL ?>blog/<?= htmlspecialchars($blog['slug']) ?>" class="blog-list-card">
                         <div class="blog-list-thumb">
                             <img src="<?= htmlspecialchars($blogImg) ?>" alt="<?= htmlspecialchars($blog['title']) ?>">
                             <?php if ($blog['category']): ?>
@@ -186,7 +194,7 @@ include __DIR__ . '/includes/header.php';
                 <?php foreach ($recentPosts as $rp):
                     $rpImg = !empty($rp['featured_image']) ? UPLOAD_URL.'blogs/'.$rp['featured_image'] : 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=100&q=60';
                 ?>
-                <a href="<?= SITE_URL ?>blog-detail.php?slug=<?= htmlspecialchars($rp['slug']) ?>" class="sidebar-post">
+                <a href="<?= SITE_URL ?>blog/<?= htmlspecialchars($rp['slug']) ?>" class="sidebar-post">
                     <img src="<?= htmlspecialchars($rpImg) ?>" alt="">
                     <div>
                         <h6><?= htmlspecialchars(mb_substr($rp['title'], 0, 55)) ?></h6>

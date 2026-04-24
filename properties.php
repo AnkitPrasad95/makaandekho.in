@@ -113,7 +113,19 @@
        GROUP BY l.id ORDER BY cnt DESC LIMIT 12
    ")->fetchAll();
    
-   $pageTitle = 'Properties' . ($search ? " – $search" : '') . ' | MakaanDekho';
+   // ---- SEO ----
+   $pageTitle = 'Properties for Sale & Rent' . ($search ? " in $search" : ($city ? " in $city" : '')) . ' | MakaanDekho';
+   $pageDesc  = "Browse $total+ verified properties" . ($search ? " matching '$search'" : ($city ? " in $city" : ' across India')) . '. Apartments, villas, plots, commercial spaces — filter by price, BHK, locality and more.';
+   $pageKeywords = trim(($search ?: $city ?: 'properties India') . ', real estate, ' . ($listing_type ?: 'sale') . ', apartments, flats, villas, plots, ' . ($property_type ?: 'residential') . ', MakaanDekho', ', ');
+   $canonicalParams = array_filter([
+       'listing_type'  => $listing_type,
+       'property_type' => $property_type,
+       'q'             => $search,
+       'city'          => $city,
+       'location_id'   => $location_id,
+   ]);
+   $pageCanonical = SITE_URL . 'properties.php' . ($canonicalParams ? '?' . http_build_query($canonicalParams) : '');
+   $pageOgType    = 'website';
    
    function buildPageUrl(int $p): string {
        $params = $_GET; $params['page'] = $p;

@@ -36,7 +36,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-$pageTitle = 'Contact Us | MakaanDekho';
+// ---- SEO (cms_pages → settings → hardcoded fallback) ----
+$cmsPage = $pdo->prepare("SELECT meta_title, meta_description, meta_keywords FROM cms_pages WHERE page_slug='contact' AND is_deleted=0 LIMIT 1");
+$cmsPage->execute();
+$cmsPage = $cmsPage->fetch() ?: [];
+$pageTitle     = $cmsPage['meta_title']       ?: 'Contact Us | MakaanDekho';
+$pageDesc      = $cmsPage['meta_description'] ?: ($settings['meta_description'] ?? 'Get in touch with MakaanDekho — call, email or send us a message. We\'re here to help with your property search, listing or any real estate query.');
+$pageKeywords  = $cmsPage['meta_keywords']    ?: ($settings['meta_keywords']    ?? 'contact MakaanDekho, real estate help, property enquiry, customer support');
+$pageCanonical = SITE_URL . 'contact.php';
+$pageOgType    = 'website';
 include __DIR__ . '/includes/header.php';
 ?>
 

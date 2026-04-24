@@ -15,6 +15,12 @@ if (!$blog) {
     include __DIR__ . '/includes/footer.php'; exit;
 }
 
+// Canonical: redirect blog/... to /blog/{slug}
+if (strpos($_SERVER['REQUEST_URI'] ?? '', 'blog-detail.php') !== false) {
+    header('Location: ' . SITE_URL . 'blog/' . $slug, true, 301);
+    exit;
+}
+
 // Increment views
 $pdo->prepare("UPDATE blogs SET views = views + 1 WHERE id = ?")->execute([$blog['id']]);
 
@@ -48,8 +54,13 @@ $featImg = !empty($blog['featured_image'])
     ? UPLOAD_URL . 'blogs/' . $blog['featured_image']
     : 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=900&q=80';
 
-$pageTitle = htmlspecialchars($blog['meta_title'] ?: $blog['title']) . ' | MakaanDekho';
-$pageDesc  = htmlspecialchars($blog['meta_description'] ?: $blog['short_description'] ?: '');
+// ---- SEO ----
+$pageTitle    = ($blog['meta_title'] ?: $blog['title']) . ' | MakaanDekho';
+$pageDesc     = $blog['meta_description'] ?: $blog['short_description'] ?: mb_substr(strip_tags($blog['content'] ?? ''), 0, 160);
+$pageKeywords = $blog['meta_keywords'] ?? trim(($blog['category'] ?? '') . ($blog['tags'] ? ', ' . $blog['tags'] : ''), ', ');
+$pageCanonical = SITE_URL . 'blog/' . $blog['slug'];
+$pageOgType    = 'article';
+$pageOgImage   = !empty($blog['featured_image']) ? UPLOAD_URL . 'blogs/' . $blog['featured_image'] : null;
 include __DIR__ . '/includes/header.php';
 ?>
 
@@ -100,10 +111,10 @@ include __DIR__ . '/includes/header.php';
             <div class="blog-share">
                 <span>Share this article:</span>
                 <div class="blog-share-btns">
-                    <a href="https://www.facebook.com/sharer/sharer.php?u=<?= urlencode(SITE_URL . 'blog-detail.php?slug=' . $blog['slug']) ?>" target="_blank" class="share-btn fb"><i class="fab fa-facebook-f"></i></a>
-                    <a href="https://twitter.com/intent/tweet?url=<?= urlencode(SITE_URL . 'blog-detail.php?slug=' . $blog['slug']) ?>&text=<?= urlencode($blog['title']) ?>" target="_blank" class="share-btn tw"><i class="fab fa-twitter"></i></a>
-                    <a href="https://wa.me/?text=<?= urlencode($blog['title'] . ' ' . SITE_URL . 'blog-detail.php?slug=' . $blog['slug']) ?>" target="_blank" class="share-btn wa"><i class="fab fa-whatsapp"></i></a>
-                    <a href="https://www.linkedin.com/shareArticle?mini=true&url=<?= urlencode(SITE_URL . 'blog-detail.php?slug=' . $blog['slug']) ?>" target="_blank" class="share-btn li"><i class="fab fa-linkedin-in"></i></a>
+                    <a href="https://www.facebook.com/sharer/sharer.php?u=<?= urlencode(SITE_URL . 'blog/' . $blog['slug']) ?>" target="_blank" class="share-btn fb"><i class="fab fa-facebook-f"></i></a>
+                    <a href="https://twitter.com/intent/tweet?url=<?= urlencode(SITE_URL . 'blog/' . $blog['slug']) ?>&text=<?= urlencode($blog['title']) ?>" target="_blank" class="share-btn tw"><i class="fab fa-twitter"></i></a>
+                    <a href="https://wa.me/?text=<?= urlencode($blog['title'] . ' ' . SITE_URL . 'blog/' . $blog['slug']) ?>" target="_blank" class="share-btn wa"><i class="fab fa-whatsapp"></i></a>
+                    <a href="https://www.linkedin.com/shareArticle?mini=true&url=<?= urlencode(SITE_URL . 'blog/' . $blog['slug']) ?>" target="_blank" class="share-btn li"><i class="fab fa-linkedin-in"></i></a>
                 </div>
             </div>
         </article>
@@ -117,7 +128,7 @@ include __DIR__ . '/includes/header.php';
                     $rpImg = !empty($rp['featured_image']) ? UPLOAD_URL.'blogs/'.$rp['featured_image'] : 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=400&q=60';
                 ?>
                 <div class="col-md-4">
-                    <a href="<?= SITE_URL ?>blog-detail.php?slug=<?= htmlspecialchars($rp['slug']) ?>" class="blog-list-card">
+                    <a href="<?= SITE_URL ?>blog/<?= htmlspecialchars($rp['slug']) ?>" class="blog-list-card">
                         <div class="blog-list-thumb">
                             <img src="<?= htmlspecialchars($rpImg) ?>" alt="">
                             <?php if ($rp['category']): ?><span class="blog-cat-badge"><?= htmlspecialchars($rp['category']) ?></span><?php endif; ?>
@@ -142,7 +153,7 @@ include __DIR__ . '/includes/header.php';
             <?php foreach ($recentPosts as $rp):
                 $rpImg = !empty($rp['featured_image']) ? UPLOAD_URL.'blogs/'.$rp['featured_image'] : 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=100&q=60';
             ?>
-            <a href="<?= SITE_URL ?>blog-detail.php?slug=<?= htmlspecialchars($rp['slug']) ?>" class="sidebar-post <?= $rp['id']==$blog['id']?'active':'' ?>">
+            <a href="<?= SITE_URL ?>blog/<?= htmlspecialchars($rp['slug']) ?>" class="sidebar-post <?= $rp['id']==$blog['id']?'active':'' ?>">
                 <img src="<?= htmlspecialchars($rpImg) ?>" alt="">
                 <div>
                     <h6><?= htmlspecialchars(mb_substr($rp['title'], 0, 55)) ?></h6>

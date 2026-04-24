@@ -6,8 +6,12 @@ $stmt = $pdo->prepare("SELECT * FROM cms_pages WHERE page_slug = 'about' AND is_
 $stmt->execute();
 $page = $stmt->fetch();
 
-$pageTitle = $page['meta_title'] ?? 'About Us | MakaanDekho';
-$pageDesc  = $page['meta_description'] ?? '';
+// ---- SEO (cms_pages → settings → hardcoded fallback) ----
+$pageTitle     = ($page['meta_title']       ?? '') ?: 'About Us | MakaanDekho';
+$pageDesc      = ($page['meta_description'] ?? '') ?: ($settings['meta_description'] ?? 'Learn about MakaanDekho — India\'s trusted real estate portal connecting property buyers, sellers, owners, agents and builders. Verified listings, transparent process.');
+$pageKeywords  = ($page['meta_keywords']    ?? '') ?: ($settings['meta_keywords']    ?? 'about MakaanDekho, real estate platform India, property portal, verified listings');
+$pageCanonical = SITE_URL . 'about.php';
+$pageOgType    = 'website';
 include __DIR__ . '/includes/header.php';
 ?>
 

@@ -1,15 +1,20 @@
 <?php
 require_once __DIR__ . '/includes/db.php';
-$pageTitle = 'Privacy Policy - ' . ($settings['site_name'] ?? 'MakaanDekho');
-$pageDesc  = 'Privacy Policy for ' . ($settings['site_name'] ?? 'MakaanDekho');
-
-// Try to fetch from CMS pages
+// Fetch CMS page (used for both content and SEO)
 $cmsPage = null;
 try {
     $stmt = $pdo->prepare("SELECT * FROM cms_pages WHERE page_slug = 'privacy' AND is_deleted=0 LIMIT 1");
     $stmt->execute();
-    $cmsPage = $stmt->fetch();
+    $cmsPage = $stmt->fetch() ?: null;
 } catch(Exception $e) {}
+
+// ---- SEO (cms_pages → settings → hardcoded fallback) ----
+$siteName      = $settings['site_name'] ?? 'MakaanDekho';
+$pageTitle     = ($cmsPage['meta_title']       ?? '') ?: 'Privacy Policy - ' . $siteName;
+$pageDesc      = ($cmsPage['meta_description'] ?? '') ?: ($settings['meta_description'] ?? 'Privacy Policy explaining how ' . $siteName . ' collects, uses and protects your personal information.');
+$pageKeywords  = ($cmsPage['meta_keywords']    ?? '') ?: ($settings['meta_keywords']    ?? 'privacy policy, data protection, MakaanDekho privacy');
+$pageCanonical = SITE_URL . 'privacy.php';
+$pageOgType    = 'website';
 
 include __DIR__ . '/includes/header.php';
 $siteName = $settings['site_name'] ?? 'MakaanDekho';

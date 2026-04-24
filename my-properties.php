@@ -24,7 +24,8 @@ $cStmt->execute([current_user_id()]);
 $counts = ['pending'=>0,'approved'=>0,'rejected'=>0];
 while ($r = $cStmt->fetch()) $counts[$r['status']] = (int)$r['cnt'];
 
-$pageTitle = 'My Properties | MakaanDekho';
+$pageTitle   = 'My Properties | MakaanDekho';
+$pageNoIndex = true;
 include __DIR__ . '/includes/header.php';
 ?>
 

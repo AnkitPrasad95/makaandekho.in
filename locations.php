@@ -21,10 +21,15 @@ foreach ($allLocations as $loc) {
 $totalLocations = count($allLocations);
 $totalStates = count($byState);
 
-$pageTitle = "All Locations – Properties Across India | MakaanDekho";
-$pageDesc = "Browse properties in $totalLocations+ locations across $totalStates states in India. Find apartments, villas, plots and commercial spaces in your preferred city.";
-$pageKeywords = "property locations India, real estate cities, buy property India, rent property India, MakaanDekho locations";
-$pageCanonical = SITE_URL . 'locations';
+// ---- SEO (cms_pages → settings → hardcoded fallback) ----
+$cmsPage = $pdo->prepare("SELECT meta_title, meta_description, meta_keywords FROM cms_pages WHERE page_slug='locations' AND is_deleted=0 LIMIT 1");
+$cmsPage->execute();
+$cmsPage = $cmsPage->fetch() ?: [];
+$pageTitle     = $cmsPage['meta_title']       ?: 'All Locations – Properties Across India | MakaanDekho';
+$pageDesc      = $cmsPage['meta_description'] ?: ($settings['meta_description'] ?? "Browse properties in $totalLocations+ locations across $totalStates states in India. Find apartments, villas, plots and commercial spaces in your preferred city.");
+$pageKeywords  = $cmsPage['meta_keywords']    ?: ($settings['meta_keywords']    ?? 'property locations India, real estate cities, buy property India, rent property India, MakaanDekho locations');
+$pageCanonical = SITE_URL . 'locations.php';
+$pageOgType    = 'website';
 
 include __DIR__ . '/includes/header.php';
 ?>

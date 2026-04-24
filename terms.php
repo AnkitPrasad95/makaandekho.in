@@ -1,15 +1,20 @@
 <?php
 require_once __DIR__ . '/includes/db.php';
-$pageTitle = 'Terms of Use - ' . ($settings['site_name'] ?? 'MakaanDekho');
-$pageDesc  = 'Terms of Use for ' . ($settings['site_name'] ?? 'MakaanDekho');
-
-// Try to fetch from CMS pages
+// Fetch CMS page (used for both content and SEO)
 $cmsPage = null;
 try {
     $stmt = $pdo->prepare("SELECT * FROM cms_pages WHERE page_slug = 'terms' AND is_deleted=0 LIMIT 1");
     $stmt->execute();
-    $cmsPage = $stmt->fetch();
+    $cmsPage = $stmt->fetch() ?: null;
 } catch(Exception $e) {}
+
+// ---- SEO (cms_pages → settings → hardcoded fallback) ----
+$siteName      = $settings['site_name'] ?? 'MakaanDekho';
+$pageTitle     = ($cmsPage['meta_title']       ?? '') ?: 'Terms of Use - ' . $siteName;
+$pageDesc      = ($cmsPage['meta_description'] ?? '') ?: ($settings['meta_description'] ?? 'Terms of Use governing your access to and use of the ' . $siteName . ' real estate platform.');
+$pageKeywords  = ($cmsPage['meta_keywords']    ?? '') ?: ($settings['meta_keywords']    ?? 'terms of use, terms and conditions, MakaanDekho legal');
+$pageCanonical = SITE_URL . 'terms.php';
+$pageOgType    = 'website';
 
 include __DIR__ . '/includes/header.php';
 $siteName = $settings['site_name'] ?? 'MakaanDekho';

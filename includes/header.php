@@ -6,6 +6,11 @@
     <title><?= htmlspecialchars($pageTitle ?? ($settings['meta_title'] ?? 'MakaanDekho – Find Your Dream Home')) ?></title>
     <meta name="description" content="<?= htmlspecialchars($pageDesc ?? ($settings['meta_description'] ?? 'Search properties for sale and rent across India.')) ?>">
     <meta name="keywords" content="<?= htmlspecialchars($pageKeywords ?? ($settings['meta_keywords'] ?? '')) ?>">
+    <?php if (!empty($pageNoIndex)): ?>
+    <meta name="robots" content="noindex, nofollow">
+    <?php else: ?>
+    <meta name="robots" content="index, follow">
+    <?php endif; ?>
     <?php if (!empty($pageCanonical)): ?>
     <link rel="canonical" href="<?= htmlspecialchars($pageCanonical) ?>">
     <?php endif; ?>
@@ -14,13 +19,21 @@
     <?php endif; ?>
 
     <!-- Open Graph -->
+    <meta property="og:site_name" content="<?= htmlspecialchars($settings['site_name'] ?? 'MakaanDekho') ?>">
     <meta property="og:title" content="<?= htmlspecialchars($pageTitle ?? ($settings['meta_title'] ?? 'MakaanDekho')) ?>">
     <meta property="og:description" content="<?= htmlspecialchars($pageDesc ?? ($settings['meta_description'] ?? '')) ?>">
     <meta property="og:type" content="<?= $pageOgType ?? 'website' ?>">
     <meta property="og:url" content="<?= htmlspecialchars($pageCanonical ?? SITE_URL) ?>">
-    <?php if (!empty($settings['site_logo'])): ?>
-    <meta property="og:image" content="<?= UPLOAD_URL . 'settings/' . $settings['site_logo'] ?>">
+    <?php
+    $ogImg = $pageOgImage ?? (!empty($settings['site_logo']) ? UPLOAD_URL . 'settings/' . $settings['site_logo'] : '');
+    if ($ogImg):
+    ?>
+    <meta property="og:image" content="<?= htmlspecialchars($ogImg) ?>">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content="<?= htmlspecialchars($ogImg) ?>">
     <?php endif; ?>
+    <meta name="twitter:title" content="<?= htmlspecialchars($pageTitle ?? ($settings['meta_title'] ?? 'MakaanDekho')) ?>">
+    <meta name="twitter:description" content="<?= htmlspecialchars($pageDesc ?? ($settings['meta_description'] ?? '')) ?>">
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -132,7 +145,7 @@ $siteName = $settings['site_name'] ?? 'MakaanDekho';
                     foreach ($catPosts as $cp) {
                         $dynamicInsights[$catName][] = [
                             'item_title' => $cp['title'],
-                            'item_url'   => 'blog-detail.php?slug=' . $cp['slug'],
+                            'item_url'   => 'blog/' . $cp['slug'],
                         ];
                     }
                     // "View All" link for this category

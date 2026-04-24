@@ -3,7 +3,34 @@
     "allow": [
       "Bash(mkdir -p \"d:/xampp/htdocs/makaandekho.in/admin/includes\")",
       "Bash(mkdir -p \"d:/xampp/htdocs/makaandekho.in/uploads/properties\")",
-      "Bash(mkdir -p \"d:/xampp/htdocs/makaandekho.in/uploads/settings\")"
+      "Bash(mkdir -p \"d:/xampp/htdocs/makaandekho.in/uploads/settings\")",
+      "Bash(curl -s \"http://localhost/makaandekho.in/sitemap.xml\" -o /tmp/sitemap-current.xml -w \"HTTP %{http_code}\\\\n\")",
+      "Read(//tmp/**)",
+      "Bash(curl -s -o /dev/null -w '%{http_code}' http://localhost/makaandekho.in/__TRACKED_VAR__)",
+      "Bash(curl -s \"http://localhost/makaandekho.in/locations\")",
+      "Bash(curl -s \"http://localhost/makaandekho.in/page/some-slug\")",
+      "Bash(curl -s \"http://localhost/makaandekho.in/page/non-existent-page-xyz\" -o /dev/null -w \"page/xyz HTTP %{http_code}\\\\n\")",
+      "Bash(curl -s \"http://localhost/makaandekho.in/locations.php\" -o /dev/null -w \"locations.php HTTP %{http_code}\\\\n\")",
+      "Bash(curl -s \"http://localhost/makaandekho.in/sitemap.xml\")",
+      "Bash(curl -s -w \"\\\\n--- HTTP %{http_code}, Content-Type: %{content_type}\\\\n\" \"http://localhost/makaandekho.in/sitemap.xml\")",
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}  →  %{redirect_url}\\\\n\" \"http://localhost/makaandekho.in/blog-detail.php?slug=interior-trends-2026\")",
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}\\\\n\" \"http://localhost/makaandekho.in/blog/interior-trends-2026\")",
+      "Bash(curl -sL -o /dev/null -w \"Final: HTTP %{http_code}  URL: %{url_effective}\\\\n\" \"http://localhost/makaandekho.in/blog-detail.php?slug=interior-trends-2026\")",
+      "Bash(curl -sL http://localhost/makaandekho.in/__TRACKED_VAR__)",
+      "Bash(curl -sL \"http://localhost/makaandekho.in/patna-dang-bangla/owner-villa-patna-pending\")",
+      "Bash(curl -sL \"http://localhost/makaandekho.in/ghaziabad-indirapuram\")",
+      "Bash(./mysql.exe -uroot makaan_dekho -e \"SHOW COLUMNS FROM cms_pages;\")",
+      "Bash(./mysql.exe -uroot makaan_dekho -e \"SELECT id, page_slug, title, meta_title, IFNULL\\(meta_keywords,'\\(null\\)'\\) AS keywords FROM cms_pages WHERE is_deleted=0;\")",
+      "Bash(./mysql.exe -uroot makaan_dekho -e \"SELECT id, page_slug, page_name, IFNULL\\(meta_title,'\\(empty\\)'\\) AS meta_title, IFNULL\\(meta_keywords,'\\(empty\\)'\\) AS meta_keywords FROM cms_pages WHERE is_deleted=0;\")",
+      "Bash(./mysql.exe -uroot makaan_dekho -e ' *)",
+      "Bash(curl -s \"http://localhost/makaandekho.in/terms.php\")",
+      "Bash(curl -s \"http://localhost/makaandekho.in/privacy.php\")",
+      "Bash(curl -s \"http://localhost/makaandekho.in/contact.php\")",
+      "Bash(./mysql.exe -uroot)",
+      "Bash(echo \"Exit: $?\")",
+      "Bash(./mysql.exe -uroot makaan_dekho -e \"SELECT id, page_slug, page_name FROM cms_pages WHERE is_deleted=0 ORDER BY id;\")",
+      "Bash(git fetch *)",
+      "Bash(git rm *)"
     ]
   }
 }
