@@ -1,3 +1,4 @@
+<?php if (session_status() === PHP_SESSION_NONE) session_start(); ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -35,23 +36,39 @@
     <meta name="twitter:title" content="<?= htmlspecialchars($pageTitle ?? ($settings['meta_title'] ?? 'MakaanDekho')) ?>">
     <meta name="twitter:description" content="<?= htmlspecialchars($pageDesc ?? ($settings['meta_description'] ?? '')) ?>">
 
-    <!-- Google Fonts -->
+    <!-- Resource hints: speed up CDN handshakes -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link rel="dns-prefetch" href="https://code.jquery.com">
+    <link rel="dns-prefetch" href="https://maps.googleapis.com">
+    <link rel="dns-prefetch" href="https://images.unsplash.com">
+
+    <!-- Preload hero banner (LCP) on homepage -->
+    <?php if (!empty($pagePreloadImage)): ?>
+    <link rel="preload" as="image" href="<?= htmlspecialchars($pagePreloadImage) ?>" fetchpriority="high">
+    <?php endif; ?>
+
+    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- Bootstrap 5 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome 6 -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
-    <!-- Swiper CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" rel="stylesheet">
+    <!-- Swiper CSS (deferred — only homepage uses it above-fold lightly) -->
+    <link rel="preload" as="style" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" rel="stylesheet"></noscript>
     <!-- Custom CSS -->
-    <link href="<?= SITE_URL ?>assets/fonts/fontawesome-pro-5/css/all.css" rel="stylesheet">
-    <link href="<?= SITE_URL ?>assets/css/animate.css" rel="stylesheet">
     <link href="<?= SITE_URL ?>assets/css/style.css" rel="stylesheet">
     <link href="<?= SITE_URL ?>assets/css/style2.css" rel="stylesheet">
+    <!-- Non-critical: load animate + fontawesome-pro async (reduces render-blocking) -->
+    <link rel="preload" as="style" href="<?= SITE_URL ?>assets/css/animate.css" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link href="<?= SITE_URL ?>assets/css/animate.css" rel="stylesheet"></noscript>
+    <link rel="preload" as="style" href="<?= SITE_URL ?>assets/fonts/fontawesome-pro-5/css/all.css" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link href="<?= SITE_URL ?>assets/fonts/fontawesome-pro-5/css/all.css" rel="stylesheet"></noscript>
     <script>var SITE_URL = '<?= SITE_URL ?>';</script>
 </head>
-<?php if (session_status() === PHP_SESSION_NONE) session_start(); ?>
 <?php
 // Site name from settings
 $siteName = $settings['site_name'] ?? 'MakaanDekho';

@@ -114,6 +114,13 @@ if (!empty($banners[0]['image']) && file_exists(UPLOAD_DIR . 'banners/' . $banne
     $pageOgImage = UPLOAD_URL . 'banners/' . $banners[0]['image'];
 }
 
+// Preload hero banner image (LCP) for faster paint
+if (!empty($banners[0]['image']) && file_exists(UPLOAD_DIR . 'banners/' . $banners[0]['image'])) {
+    $pagePreloadImage = UPLOAD_URL . 'banners/' . $banners[0]['image'];
+} else {
+    $pagePreloadImage = SITE_URL . 'assets/img/banner.jpg';
+}
+
 include __DIR__ . '/includes/header.php';
 ?>
 
@@ -242,7 +249,7 @@ include __DIR__ . '/includes/header.php';
                 <div class="swiper-slide">
                     <a href="<?= SITE_URL ?>properties.php?type=<?= $tc['type'] ?>">
                         <div class="location-card">
-                            <img src="<?= $tc['img'] ?>" alt="<?= $tc['label'] ?>">
+                            <img src="<?= $tc['img'] ?>" alt="<?= $tc['label'] ?>" loading="lazy" decoding="async">
                             <div class="overlay">
                                 <h4><?= $tc['label'] ?></h4>
                                 <p style="color:#fff;font-size:13px;margin:0;"><?= $count ?> Properties</p>
@@ -259,7 +266,7 @@ include __DIR__ . '/includes/header.php';
                 <div class="swiper-slide">
                     <a href="<?= SITE_URL ?>properties.php?city=<?= urlencode($loc['city']) ?>">
                         <div class="location-card">
-                            <img src="https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=400&q=75" alt="<?= htmlspecialchars($loc['city']) ?>">
+                            <img src="https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=400&q=75" alt="<?= htmlspecialchars($loc['city']) ?>" loading="lazy" decoding="async">
                             <div class="overlay">
                                 <h4><?= htmlspecialchars($loc['city']) ?></h4>
                                 <p style="color:#fff;font-size:13px;margin:0;"><?= $loc['prop_count'] ?> Properties</p>
@@ -340,7 +347,7 @@ function renderPropertySection($title, $subtitle, $properties, $siteUrl, $upload
                                 }
                                 ?>
                                 <a href="<?= $siteUrl ?>property-detail.php?slug=<?= htmlspecialchars($prop['slug'] ?? '') ?>">
-                                    <img src="<?= htmlspecialchars($thumb) ?>" alt="<?= htmlspecialchars($prop['title']) ?>">
+                                    <img src="<?= htmlspecialchars($thumb) ?>" alt="<?= htmlspecialchars($prop['title']) ?>" loading="lazy" decoding="async">
                                 </a>
                                 <div class="badges">
                                     <?php if (!empty($prop['featured'])): ?>
@@ -460,7 +467,7 @@ function renderPropertySection($title, $subtitle, $properties, $siteUrl, $upload
         <div class="row align-items-center">
             <div class="col-lg-5">
                 <div class="neighborhood-img">
-                    <img src="assets/img/single-image-02.png" alt="Find your neighborhood" onerror="this.src='https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=500&q=80'">
+                    <img src="assets/img/single-image-02.png" alt="Find your neighborhood" loading="lazy" decoding="async" onerror="this.src='https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=500&q=80'">
                 </div>
             </div>
             <div class="col-lg-6 offset-lg-1">
@@ -548,7 +555,7 @@ function renderPropertySection($title, $subtitle, $properties, $siteUrl, $upload
                         <div class="blog-card">
                             <div class="blog-thumb hover-shine">
                                 <a href="<?= SITE_URL ?>blog/<?= htmlspecialchars($blog['slug']) ?>">
-                                    <img src="<?= htmlspecialchars($blogImg) ?>" alt="<?= htmlspecialchars($blog['title']) ?>">
+                                    <img src="<?= htmlspecialchars($blogImg) ?>" alt="<?= htmlspecialchars($blog['title']) ?>" loading="lazy" decoding="async">
                                 </a>
                                 <span class="blog-category"><?= htmlspecialchars($blog['category'] ?? 'News') ?></span>
                             </div>
@@ -603,7 +610,7 @@ function renderPropertySection($title, $subtitle, $properties, $siteUrl, $upload
                         <p class="testimonial-text"><?= htmlspecialchars($t['content']) ?></p>
                         <div class="testimonial-author">
                             <?php if (!empty($t['photo'])): ?>
-                            <img src="<?= UPLOAD_URL ?>testimonials/<?= htmlspecialchars($t['photo']) ?>" alt="<?= htmlspecialchars($t['name']) ?>">
+                            <img src="<?= UPLOAD_URL ?>testimonials/<?= htmlspecialchars($t['photo']) ?>" alt="<?= htmlspecialchars($t['name']) ?>" loading="lazy" decoding="async">
                             <?php else: ?>
                             <div class="testimonial-avatar"><?= strtoupper(substr($t['name'], 0, 1)) ?></div>
                             <?php endif; ?>

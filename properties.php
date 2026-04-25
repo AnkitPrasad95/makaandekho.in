@@ -79,12 +79,12 @@
    }
    
    $whereSQL = implode(' AND ', $where);
-   $orderSQL = match($sort) {
-       'price_low'  => 'p.price ASC',
-       'price_high' => 'p.price DESC',
-       'oldest'     => 'p.created_at ASC',
-       default      => 'p.created_at DESC',
-   };
+   switch ($sort) {
+       case 'price_low':  $orderSQL = 'p.price ASC';       break;
+       case 'price_high': $orderSQL = 'p.price DESC';      break;
+       case 'oldest':     $orderSQL = 'p.created_at ASC';  break;
+       default:           $orderSQL = 'p.created_at DESC';
+   }
    
    // Total count
    $countStmt = $pdo->prepare("SELECT COUNT(*) FROM properties p LEFT JOIN locations l ON p.location_id = l.id WHERE $whereSQL");
