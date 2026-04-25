@@ -160,16 +160,16 @@ $footerPropertyTypes = [
     <a href="#" class="scroll-top" id="scrollTop"><i class="fas fa-arrow-up"></i></a>
 </footer>
 
-<!-- Bootstrap JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<!-- Swiper JS -->
-<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-<!-- jQuery -->
-<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-<!-- Waypoints -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/waypoints/4.0.1/jquery.waypoints.min.js"></script>
-<!-- Custom JS -->
-<script src="<?= SITE_URL ?>assets/js/main.js"></script>
+<!-- Bootstrap JS (deferred) -->
+<script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Swiper JS (deferred) -->
+<script defer src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+<!-- jQuery (deferred — order preserved) -->
+<script defer src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<!-- Waypoints (deferred, depends on jQuery) -->
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/waypoints/4.0.1/jquery.waypoints.min.js"></script>
+<!-- Custom JS (deferred) -->
+<script defer src="<?= SITE_URL ?>assets/js/main.js"></script>
 
 <script>
 // ── Client-side Form Validator ──
