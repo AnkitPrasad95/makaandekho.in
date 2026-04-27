@@ -141,7 +141,7 @@ $footerPropertyTypes = [
 
     <!-- Footer Bottom -->
     <div class="footer-bottom">
-        <div class="container" style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;">
+        <div class="container" style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px;">
             <div class="footer-bottom-links">
                 <a href="<?= SITE_URL ?>terms.php">Terms of Use</a>
                 <a href="<?= SITE_URL ?>privacy.php">Privacy Policy</a>
@@ -152,6 +152,12 @@ $footerPropertyTypes = [
                 <?php else: ?>
                     &copy; <?= date('Y') ?> <?= htmlspecialchars($siteName) ?>. All Rights Reserved
                 <?php endif; ?>
+            </p>
+            <p class="sama-credit" style="margin:0;">
+                Designed and Developed by
+                <a href="https://www.samasolution.in/" target="_blank" rel="noopener">
+                    <img src="<?= UPLOAD_URL ?>settings/logo-sama-solution.png" alt="Sama Solution" loading="lazy" decoding="async">
+                </a>
             </p>
         </div>
     </div>

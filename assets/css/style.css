@@ -881,6 +881,31 @@ section { padding: 70px 0; }
 .footer-bottom-links a { color: #aab; }
 .footer-bottom-links a:hover { color: var(--primary); }
 
+/* "Designed and Developed by" credit */
+.sama-credit {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    color: #aab;
+    font-size: 13px;
+}
+.sama-credit a {
+    display: inline-flex;
+    align-items: center;
+    background: #fff;
+    border-radius: 10px;
+    padding: 5px 8px;
+    line-height: 0;
+    transition: transform .2s;
+}
+.sama-credit a:hover { transform: translateY(-1px); }
+.sama-credit img {
+    width: 110px;
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+
 /* Scroll to Top */
 .scroll-top {
     position: fixed;
