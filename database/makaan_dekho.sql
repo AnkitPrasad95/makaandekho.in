@@ -534,7 +534,7 @@ CREATE TABLE `settings` (
   `smtp_host` varchar(255) DEFAULT NULL,
   `smtp_user` varchar(255) DEFAULT NULL,
   `smtp_pass` varchar(255) DEFAULT NULL,
-  `smtp_port` int(11) DEFAULT 587,
+  `smtp_port` int(11) DEFAULT 465,
   `address` text DEFAULT NULL,
   `footer_text` text DEFAULT NULL,
   `facebook` varchar(255) DEFAULT NULL,
@@ -550,7 +550,7 @@ CREATE TABLE `settings` (
 --
 
 INSERT INTO `settings` (`id`, `site_name`, `site_logo`, `favicon`, `meta_title`, `meta_description`, `meta_keywords`, `whatsapp_number`, `phone`, `email`, `smtp_host`, `smtp_user`, `smtp_pass`, `smtp_port`, `address`, `footer_text`, `facebook`, `instagram`, `twitter`, `youtube`, `linkedin`, `updated_at`) VALUES
-(1, 'MakaanDekho', 'logo_1775291967.png', 'favicon_1775298936.png', 'MakaanDekho – Find Your Dream Home | Verified Properties', 'India\'s trusted real estate portal. RERA verified apartments, villas, plots for sale and rent.', 'real estate,property,buy home,rent,RERA verified,MakaanDekho', '9999999999', NULL, 'info@makaandekho.in', 'smtp.gmail.com', 'ankitakp1995@gmail.com', 'zkymlbfeobnshzkd', 587, 'MakaanDekho.in, Tower B, Sector 62, Noida, UP 201301', '© 2026 MakaanDekho. All Rights Reserved.', NULL, NULL, NULL, NULL, NULL, '2026-04-04 17:37:29');
+(1, 'MakaanDekho', 'logo_1775291967.png', 'favicon_1775298936.png', 'MakaanDekho – Find Your Dream Home | Verified Properties', 'India\'s trusted real estate portal. RERA verified apartments, villas, plots for sale and rent.', 'real estate,property,buy home,rent,RERA verified,MakaanDekho', '9999999999', NULL, 'info@makaandekho.in', 'websrv.htshosting.org', 'info@makaandekho.in', NULL, 465, 'MakaanDekho.in, Tower B, Sector 62, Noida, UP 201301', '© 2026 MakaanDekho. All Rights Reserved.', NULL, NULL, NULL, NULL, NULL, '2026-04-04 17:37:29');
 
 -- --------------------------------------------------------
 

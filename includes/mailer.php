@@ -6,7 +6,7 @@ use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
 
 /**
- * Send email using PHPMailer with Gmail SMTP.
+ * Send email using PHPMailer over SMTP (host/creds from Admin Settings).
  * Returns true on success, false on failure.
  */
 function sendMail($to, $subject, $htmlBody, $settings = []) {
@@ -41,7 +41,7 @@ function sendMail($to, $subject, $htmlBody, $settings = []) {
         $smtpHost = $settings['smtp_host'] ?? '';
         $smtpUser = $settings['smtp_user'] ?? '';
         $smtpPass = $settings['smtp_pass'] ?? '';
-        $smtpPort = (int)($settings['smtp_port'] ?? 587);
+        $smtpPort = (int)($settings['smtp_port'] ?? 465);
 
         if (!$smtpHost || !$smtpUser || !$smtpPass) {
             // Log and fail if SMTP not configured
@@ -80,11 +80,13 @@ function sendMail($to, $subject, $htmlBody, $settings = []) {
         $sent = false;
     }
 
-    // Log email
-    $logDir = dirname(__DIR__) . '/logs';
-    if (!is_dir($logDir)) @mkdir($logDir, 0755, true);
-    $logEntry = date('Y-m-d H:i:s') . " | To: $to | Subject: $subject | Status: " . ($sent ? 'SENT' : 'FAILED: ' . ($mail->ErrorInfo ?? 'unknown')) . "\n";
-    @file_put_contents($logDir . '/email.log', $logEntry, FILE_APPEND);
+    // Log failures only — successful sends are noise that hide real issues
+    if (!$sent) {
+        $logDir = dirname(__DIR__) . '/logs';
+        if (!is_dir($logDir)) @mkdir($logDir, 0755, true);
+        $logEntry = date('Y-m-d H:i:s') . " | To: $to | Subject: $subject | FAILED: " . ($mail->ErrorInfo ?? 'unknown') . "\n";
+        @file_put_contents($logDir . '/email.log', $logEntry, FILE_APPEND);
+    }
 
     return $sent;
 }

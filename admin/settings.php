@@ -20,7 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $smtp_host       = trim($_POST['smtp_host']        ?? '');
     $smtp_user       = trim($_POST['smtp_user']        ?? '');
     $smtp_pass       = trim($_POST['smtp_pass']        ?? '');
-    $smtp_port       = (int) ($_POST['smtp_port']      ?? 587);
+    $smtp_port       = (int) ($_POST['smtp_port']      ?? 465);
     $meta_title      = trim($_POST['meta_title']       ?? '');
     $meta_description= trim($_POST['meta_description'] ?? '');
     $meta_keywords   = trim($_POST['meta_keywords']    ?? '');
@@ -228,7 +228,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <label style="font-size:12.5px;font-weight:600;">SMTP Host</label>
             <input type="text" name="smtp_host" class="form-control form-control-sm"
                    value="<?= htmlspecialchars($settings['smtp_host'] ?? '') ?>"
-                   placeholder="smtp.gmail.com">
+                   placeholder="websrv.htshosting.org">
           </div>
           <div class="row">
             <div class="col-8">
@@ -236,15 +236,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <label style="font-size:12.5px;font-weight:600;">SMTP Username</label>
                 <input type="text" name="smtp_user" class="form-control form-control-sm"
                        value="<?= htmlspecialchars($settings['smtp_user'] ?? '') ?>"
-                       placeholder="your@email.com">
+                       placeholder="info@makaandekho.in">
               </div>
             </div>
             <div class="col-4">
               <div class="form-group">
                 <label style="font-size:12.5px;font-weight:600;">Port</label>
                 <input type="number" name="smtp_port" class="form-control form-control-sm"
-                       value="<?= (int)($settings['smtp_port'] ?? 587) ?>"
-                       placeholder="587">
+                       value="<?= (int)($settings['smtp_port'] ?? 465) ?>"
+                       placeholder="465">
               </div>
             </div>
           </div>
